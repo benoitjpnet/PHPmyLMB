@@ -1,29 +1,73 @@
 <?php
 
 if(isset($_GET['sitemap']))
-{
-header("Content-Type: text/plain");
-$directory = "./";
-$files = glob($directory . "*");
-foreach($files as $file)
-{
- if(is_dir($file))
- {
-  $dir2 = "$file/";
-  $files2 = glob($dir2 . "*");
-   foreach($files2 as $file2)
 	{
-	$fileout = explode("/", $file2);
-	$filepath = substr("$file", 2); $special = '';
-	if(strpos($fileout[2], '.webm') == FALSE) { $paramv = ''; } else { $special = "1"; $paramv = '?video='; }
-	if(strpos($fileout[2], '.opus') == FALSE) { $parama = ''; } else { $special = "1"; $parama = '?audio='; }
-	if(strpos($fileout[2], '.swf') == FALSE) { $paramf = ''; } else { $special = "1"; $paramf = '?flash='; }
-	if(strpos($fileout[2], '.gif') == FALSE) { $parami = ''; } else { $special = "1"; $parami = '/?image='; }
-	echo 'http://'.$_SERVER['SERVER_NAME'].'/'.$paramv.$parama.$paramf.rawurlencode($filepath)."/".rawurlencode($fileout[2])."\n"; }
- }
-}
-die;
-}
+	header('Content-Type: application/xml');
+	echo '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n";
+	$directory = "./";
+	$files = glob($directory . "*");
+	foreach($files as $file)
+		{
+		if(is_dir($file))
+			{
+			$dir2 = "$file/";
+			$files2 = glob($dir2 . "*");
+			foreach($files2 as $file2)
+				{
+				$fileout = explode("/", $file2);
+				$filepath = substr("$file", 2); $special = '';
+				if(strpos($fileout[2], '.webm') == FALSE) { $paramv = ''; } else { $special = "1"; $paramv = '?video='; }
+				if(strpos($fileout[2], '.opus') == FALSE) { $parama = ''; } else { $special = "1"; $parama = '?audio='; }
+				if(strpos($fileout[2], '.swf') == FALSE) { $paramf = ''; } else { $special = "1"; $paramf = '?flash='; }
+				if(strpos($fileout[2], '.gif') == FALSE) { $parami = ''; } else { $special = "1"; $parami = '/?image='; }
+				echo "<url>\n";
+				echo '	<loc>http://'.$_SERVER['SERVER_NAME'].'/'.$paramv.$parama.$paramf.rawurlencode($filepath)."/".rawurlencode($fileout[2])."</loc>\n";
+				echo '	<lastmod>'.date('c', filemtime($file2))."</lastmod>\n";
+				echo "</url>\n";
+				}
+			}
+		}
+	echo '</urlset>';
+	die;
+	}
+
+if(isset($_GET['feed']))
+	{
+	header('Content-Type: application/atom+xml; charset=UTF-8');
+	echo '<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom"><title type="text">Mitsu\'Media</title><link rel="self" type="application/atom+xml" href="http://'.$_SERVER['SERVER_NAME']. '/?feed'.'" /><id>tag:mitsu,2000:1</id><updated>'.date('c').'</updated>'."\n";
+	$directory = "./";
+	$files = glob($directory . "*");
+	foreach($files as $file)
+		{
+		if(is_dir($file))
+			{
+			$dir2 = "$file/";
+			$files2 = glob($dir2 . "*");
+			foreach($files2 as $file2)
+				{
+				$modtime = filemtime($file2);
+				$fileout = explode("/", $file2);
+				$filepath = substr("$file", 2); $special = '';
+				if(strpos($fileout[2], '.webm') == FALSE) { $paramv = ''; } else { $paramv = '?video='; }
+				if(strpos($fileout[2], '.opus') == FALSE) { $parama = ''; } else { $parama = '?audio='; }
+				if(strpos($fileout[2], '.swf') == FALSE) { $paramf = ''; } else { $paramf = '?flash='; }
+				if(strpos($fileout[2], '.gif') == FALSE) { $parami = ''; } else { $parami = '/?image='; }
+				$entry = "<entry>\n";
+				$entry = $entry.'	<title>'.$filepath.'/'.$fileout[2].'</title>'."\n";
+				$entry = $entry.'	<link href="http://'.$_SERVER['SERVER_NAME'].'/'.$paramv.$parama.$paramf.rawurlencode($filepath)."/".rawurlencode($fileout[2])."\"/>\n";
+				$entry = $entry.'	<id>http://'.$_SERVER['SERVER_NAME'].'/'.$paramv.$parama.$paramf.rawurlencode($filepath)."/".rawurlencode($fileout[2]).'</id>'."\n";
+				$entry = $entry.'	<updated>'.date('c', filemtime($file2))."</updated>\n";
+				$entry = $entry.'	<author><name>Mitsu</name></author><summary>'.$fileout[2].'</summary>'."\n";
+				$entry = $entry."</entry>\n";
+				$listing[$modtime]="$entry";
+
+				}
+			}
+		}
+	krsort($listing);$i=0; foreach($listing as $entry) { if ($i < 20) { echo $entry;$i=1+$i; } }
+	echo '</feed>';
+	die;
+	}
 
 function source($a)
 {
@@ -101,7 +145,7 @@ embed {border:1px solid;width:800px;height:480px;box-shadow: 0px 2px 6px rgba(10
 <meta name="robots" content="<?php echo $index; ?>,noodp,noydir,noarchive" />
 </head>
 <body>
-<?php echo $ssl; ?> <a href="./?sitemap">sitemap</a>
+<?php echo $ssl; ?> <a href="./?sitemap">sitemap</a> <a href="./?feed"><img alt="rss" width="13" height="13" src="data:image/gif;base64,R0lGODlhDQANAOYAAAAAAP/////63f/yzP/er//04//brP/t1f/Yqv+0ZP++d//Ii//Sn/+oU//Eh//Gjv/LlP95AP99Av98BP99BP9/B/99Cv+FFf+cP//Hkv/Urf9zAP91AP93AP95Bf94B/+IJf9sAP9vAP9xAP5yBv91B/51CP9/Hv+3gf9pAP9qAP9rAP5sBv5vDP91Ev99IPF2H/+VSuqOTv9gAP9lAftnCf9sDO5nFe1qGP9cAP9eAPxeBPllEO1nHu1qHvFzKeiOW/+wgv+7lf/Jq/9ZAPtWAPNRAPdYCvBZCvNfEupcFe1hF/x/QfxQAPlRAPZNAO9NAOpbG/u3lv/g0vtIAPZIAPNKAOxOCelRFO1VFetVGvNqMO6AU/ZEAPI/AOo/AOg+AOxFCehPF+ZUIOc6AOlDC+5pQN1vSu6BX8+aieI+EOpKHOwxAOotAOcsAOMtANwsAOJBF+Z3W9wqBdw0EtgmB9g7HtQdAOV9b9UUANEXANcgDeBRQf///wAAAAAAACH5BAEAAH0ALAAAAAANAA0AAAeogH1nZF9QSDUsJCYeMH1pZWFHVV1EKiIbFB0yY2xDAQcoLjMjExURLVheQgGsAQobEhMrPFFOOzYvEKwEIyo6SUpOGgEPGxesGU1PWUtEDK0YFqxMbWI9KiolDqwnMQFTbmo+IR8NEgkBBU+sa3A4IQgBAzkCAVtSAXJ3NxwLAQZUggTggiYAHj1AIkQAQcOKFjNx6PDZY6fPjxRFjFwB82ZOnTx0+gQCADs%3D"> feed</a> <a href="https://github.com/mitsukarenai/mitsumedia"><img alt="source" width="13" height="13" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAANCAYAAABy6+R8AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH3QMKAAkxynWElgAAAIlJREFUKM/F0rEJAkEQheHvrgczWxAM3VSuBmswsQQ7uBpMrMFEjPWwAsEebEGTCZbDdQ0EBwZ+2Pf2zQ7Lv2uNffAWfX7YFkwLnIMThm+SbpijwQPTkrDDs9LFWuEQvMFuLGgLicfgJU6fEmqjdSXjJB7eYIb7O9F4vIRr3JyytVdNQ8aXn32XFxtyIcfbhcJPAAAAAElFTkSuQmCC">source</a>
 <div id="content">
 <div style="min-height:150px;">
 <h1>Mitsu'Media: Miku</h1><span style="font-size:small">Répertoire media de <a href="http://www.suumitsu.eu">Mitsu</a> avec plein de choses bien</span><br>
