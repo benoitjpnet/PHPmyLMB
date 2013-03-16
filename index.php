@@ -161,7 +161,7 @@ EOT;
 print <<<EOT
     </div>
     <div id="footer">
-    Powered by <a href="https://github.com/benpro/PHPmyLMB">PHPmyLMP</a>.
+    Powered by <a href="https://github.com/benpro/PHPmyLMB">PHPmyLMB</a>.
     </div>
 </body>
 </html>
