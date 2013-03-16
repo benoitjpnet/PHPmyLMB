@@ -9,5 +9,5 @@ $conf = array(
     'allowed_extensions' => '*.{webm,opus,ogg}',
     'author' => 'your name',
     'title' => 'PHPmyLMP – Lightweight Media Browser',
-    'desc' => "yourName's Medias",
+    'desc' => "yourName's Media",
 );
