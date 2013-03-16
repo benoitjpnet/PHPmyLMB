@@ -5,7 +5,7 @@
  * Very useful to share with people :)
  * Forked from mitsumedia (https://github.com/mitsukarenai/mitsumedia) and
  * *really* redesigned code part.
- * LICENCE ???
+ * LICENCE is WTFPL.
  */
 
 require('config.inc.php');
