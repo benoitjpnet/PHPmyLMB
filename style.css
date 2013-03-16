@@ -39,7 +39,8 @@ video {
     border: 1px solid;
     box-shadow: 0px 3px 5px rgba(100, 100, 100, 0.9);
     margin-bottom: 5px;
-    max-height: 720px;
+    max-width: 100%;
+    height: auto;
 }
 
 img.file {
