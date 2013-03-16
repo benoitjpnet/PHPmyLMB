@@ -1,0 +1,97 @@
+body {
+    color: #444;
+    background-color: white;
+    background-image: linear-gradient(#fff, #b8f1f3);
+    background-image: -webkit-linear-gradient(#fff, #b8f1f3);
+    background-attachment: fixed;
+    font-size: 1em;
+    margin-left: 20px;
+    margin-top: 20px;
+    font-family: sans-serif;
+    font-weight: bold;
+}
+
+#content {
+    background-image: url(miku_nendoroid.png);
+    background-repeat: no-repeat;
+    background-position: right top;
+}
+
+a {
+    color: black;
+    text-decoration: none;
+    font-size: small;
+}
+
+a:hover {
+    background-color: yellow;
+    text-decoration: none;
+}
+
+h1 {
+    color: black;
+    font-size: 2em;
+    margin: 0;
+    padding: 0;
+}
+
+video {
+    border: 1px solid;
+    height: 480px;
+    box-shadow: 0px 3px 5px rgba(100, 100, 100, 0.9);
+    margin-bottom: 5px;
+}
+
+img.file {
+    border: 1px solid;
+    box-shadow: 0px 3px 5px rgba(100, 100, 100, 0.9);
+}
+
+embed {
+    border: 1px solid;
+    width: 800px;
+    height: 480px;
+    box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.9);
+}
+
+.vignette {
+    width: 27em;
+    height: 10em;
+    overflow-y: auto;
+    overflow-x: hidden;
+    float: left;
+    padding: 5px;
+    border: 2px solid #423137;
+    border-radius: 4px;
+    background-color: #fdfbe1;
+    margin-left: 0;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.vignette .title {
+    font-size: 12pt;
+    color: #830000;
+}
+
+.vignette ul {
+    padding: 0;
+    list-style: none;
+}
+
+.fileinfo {
+    margin: 1em;
+    font-family: monospace;
+}
+
+#looplink a {
+    font-size: x-large;
+}
+
+#footer {
+    clear: both;
+    position: relative;
+    z-index: 10;
+    height: 3em;
+    margin-top: -3em;
+}
