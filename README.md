@@ -1,6 +1,12 @@
-mitsumedia
+PHPmyLMB
 ==========
 
-Simplement ajouter des dossiers remplis de fichiers..
+Lightweight media browser.  Generate a web page with media contents such as
+videos and audios.  Very useful to share with people :) Forked from mitsumedia
+(https://github.com/mitsukarenai/mitsumedia) and *really* redisgned code part.
 
-PROTIP: c'est mieux quand ça contient du WebM, de l'Opus,..
+Installation
+============
+
+# Clone the repo somewhere on a server with PHP capabilities.
+# 
