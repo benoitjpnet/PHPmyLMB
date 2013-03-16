@@ -43,6 +43,7 @@ function explorerHTML() {
     $filesArray = getFiles();
     $explorer = '';
     foreach ($filesArray as $dirname => $files) {
+        $dirnameurlencoded = urlencode($dirname);
         $explorer .= <<<EOT
 <div class="vignette">
     <div class="title">$dirname/</div>
@@ -50,12 +51,11 @@ function explorerHTML() {
         
 EOT;
         foreach($files as $file) {
-            $dirname = urlencode($dirname);
             $filenameurlencoded = urlencode($file['name']);
             $explorer .= <<<EOT
             <li>
-            <a href="$dirname/$filenameurlencoded"><img title="Right click → Save as" alt="" src="save.png"></a>
-            <a href="?file=$dirname/$filenameurlencoded">{$file['name']}</a>
+            <a href="$dirnameurlencoded/$filenameurlencoded"><img title="Right click → Save as" alt="" src="save.png"></a>
+            <a href="?file=$dirnameurlencoded/$filenameurlencoded">{$file['name']}</a>
             </li>
             
 EOT;
