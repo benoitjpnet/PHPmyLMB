@@ -105,7 +105,7 @@ EOT;
 
 /* File part. When user has clicked on a file. Generate the embeded media. */
 if (isset($_GET['file'])) {
-    $path = $_GET['file'];
+    $path = urldecode($_GET['file']);
     /* Verify if the file exists and construct the embedded media. */
     if (file_exists('./' . $path)) {
         $mtime = date('c', filemtime($path));
