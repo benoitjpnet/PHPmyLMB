@@ -43,7 +43,7 @@ function explorerHTML() {
     $filesArray = getFiles();
     $explorer = '';
     foreach ($filesArray as $dirname => $files) {
-        $dirnameurlencoded = urlencode($dirname);
+        $dirnameurlencoded = rawurlencode($dirname);
         $explorer .= <<<EOT
 <div class="vignette">
     <div class="title">$dirname/</div>
@@ -51,7 +51,7 @@ function explorerHTML() {
         
 EOT;
         foreach($files as $file) {
-            $filenameurlencoded = urlencode($file['name']);
+            $filenameurlencoded = rawurlencode($file['name']);
             $explorer .= <<<EOT
             <li>
             <a href="$dirnameurlencoded/$filenameurlencoded"><img title="Right click → Save as" alt="" src="save.png"></a>
@@ -110,7 +110,7 @@ if (isset($_GET['file'])) {
     if (file_exists('./' . $path)) {
         $mtime = date('c', filemtime($path));
         $mediatitle = $path;
-        $pathurlencoded = urlencode($path);
+        $pathurlencoded = rawurlencode($path);
         $mediacode = <<<EOT
 <div class="fileinfo">
     File: <time datetime="$mtime">$path</time><br />
@@ -141,7 +141,7 @@ print <<<EOT
     <meta name="description" content="{$conf['desc']}">
     <link rel='stylesheet' href='style.css' type='text/css' media='screen' />
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon"> 
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <meta name="robots" content="index" />
 </head>
 <body>
