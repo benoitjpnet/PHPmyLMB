@@ -102,13 +102,14 @@ EOT;
         foreach ($files as $file) {
             $nameurlencoded = rawurlencode($file['name']);
             $dirnameurlencoded = rawurlencode($dirname);
+            $updated = date('c', $file['mtime']);
             $entries[$file['mtime']] = <<<EOT
 
     <entry>
         <title>$dirname/{$file['name']}</title>
         <link href="{$conf['uri']}/?file=$dirnameurlencoded/$nameurlencoded"/>
         <id>{$conf['uri']}/?file=$dirnameurlencoded/$nameurlencoded</id>
-        <updated>{$file['mtime']}</updated>
+        <updated>$updated</updated>
         <author><name>{$conf['author']}</name></author><summary>{$file['name']}</summary>
     </entry>
 
