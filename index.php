@@ -77,8 +77,8 @@ if (isset($_GET['feed'])) {
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title type="text">{$conf['title']}</title>
-    <link rel="self" type="application/atom+xml" href="http://{$_SERVER['SERVER_NAME']}/?feed" />
-    <id>tag:phpmylmp,2000:1</id>
+    <link rel="self" type="application/atom+xml" href="http://{$conf['uri']}/?feed" />
+    <id>tag:phpmylmb,2000:1</id>
     <updated>$date</updated>
 
 EOT;
@@ -86,11 +86,12 @@ EOT;
     foreach ($filesArray as $dirname => $files) {
         foreach ($files as $file) {
             $nameurlencoded = rawurlencode($file['name']);
+            $dirnameurlencoded = rawurlencode($dirname);
             print <<<EOT
     <entry>
         <title>{$file['name']}</title>
-        <link href="http://{$_SERVER['SERVER_NAME']}/?file=$dirname/$nameurlencoded"/>
-        <id>http://{$_SERVER['SERVER_NAME']}/?file=$dirname/$nameurlencoded</id>
+        <link href="http://{$conf['uri']}/?file=$dirnameurlencoded/$nameurlencoded"/>
+        <id>http://{$conf['uri']}/?file=$dirnameurlencoded/$nameurlencoded</id>
         <updated>{$file['mtime']}</updated>
         <author><name>{$conf['author']}</name></author><summary>{$file['name']}</summary>
     </entry>
