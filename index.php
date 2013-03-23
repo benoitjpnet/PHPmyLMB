@@ -80,7 +80,7 @@ if (isset($_GET['feed'])) {
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title type="text">{$conf['title']}</title>
-    <link rel="self" type="application/atom+xml" href="http://{$conf['uri']}/?feed" />
+    <link rel="self" type="application/atom+xml" href="{$conf['uri']}/?feed" />
     <id>tag:phpmylmb,2000:1</id>
     <updated>$date</updated>
 
@@ -94,8 +94,8 @@ EOT;
             
     <entry>
         <title>$dirname/{$file['name']}</title>
-        <link href="http://{$conf['uri']}/?file=$dirnameurlencoded/$nameurlencoded"/>
-        <id>http://{$conf['uri']}/?file=$dirnameurlencoded/$nameurlencoded</id>
+        <link href="{$conf['uri']}/?file=$dirnameurlencoded/$nameurlencoded"/>
+        <id>{$conf['uri']}/?file=$dirnameurlencoded/$nameurlencoded</id>
         <updated>{$file['mtime']}</updated>
         <author><name>{$conf['author']}</name></author><summary>{$file['name']}</summary>
     </entry>

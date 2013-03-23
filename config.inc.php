@@ -3,7 +3,10 @@
  * Configuration file for PHPmyLMB.
  */
 $conf = array(
-    /* Set URI of your PHPmyLMB installation. */
+    /*
+     * Set URI of your PHPmyLMB installation. Do not set the last trailing
+     * slash.
+     */
     'uri' => 'http://example.com/media',
     /*
      * Allowed extensions, warning adding an extension will not automagically
