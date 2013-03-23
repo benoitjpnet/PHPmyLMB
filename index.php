@@ -87,9 +87,10 @@ EOT;
         foreach ($files as $file) {
             $nameurlencoded = rawurlencode($file['name']);
             $dirnameurlencoded = rawurlencode($dirname);
-            print <<<EOT
+            $entries[$file['mtime']] = <<<EOT
+            
     <entry>
-        <title>{$file['name']}</title>
+        <title>$dirname/{$file['name']}</title>
         <link href="http://{$conf['uri']}/?file=$dirnameurlencoded/$nameurlencoded"/>
         <id>http://{$conf['uri']}/?file=$dirnameurlencoded/$nameurlencoded</id>
         <updated>{$file['mtime']}</updated>
@@ -97,8 +98,13 @@ EOT;
     </entry>
 
 EOT;
-            //FIXME: Did we need to limit the size of the RSS feed?
         }
+    }
+    /* Finally return the last entries ($conf['feed_items']) for the feed.*/
+    krsort($entries);
+    $entries = array_slice($entries, 0, $conf['feed_items']);
+    foreach ($entries as $entry) {
+        print $entry;
     }
     print '</feed>';
     exit(0);

@@ -13,4 +13,5 @@ $conf = array(
     'author' => 'your name',
     'title' => 'PHPmyLMP – Lightweight Media Browser',
     'desc' => "yourName's Media",
+    'feed_items' => 30,
 );
