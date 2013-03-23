@@ -69,7 +69,7 @@ EOT;
 
             <li>
             <a href="$dirnameurlencoded/$filenameurlencoded"><img title="Right click → Save as" alt="" src="save.png"></a>
-            <a href="?file=$dirnameurlencoded/$filenameurlencoded&sort=$sort">{$file['name']}</a>
+            <a href="?file=$dirnameurlencoded/$filenameurlencoded&amp;sort=$sort">{$file['name']}</a>
             </li>
 
 EOT;
