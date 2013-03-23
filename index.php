@@ -153,6 +153,7 @@ print <<<EOT
     <link rel='stylesheet' href='style.css' type='text/css' media='screen' />
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="alternate" type="application/atom+xml" title="ATOM last uploaded files" href="{$conf['uri']}/?feed">
     <meta name="robots" content="index" />
 </head>
 <body>
