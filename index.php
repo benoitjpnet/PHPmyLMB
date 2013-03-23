@@ -15,7 +15,7 @@ require('config.inc.php');
  * @return array $filesArray
  */
 function getFiles() {
-    
+
     global $conf;
     /* Find all dir and in each dir get files. */
     $directories = glob('*', GLOB_ONLYDIR);
@@ -39,34 +39,34 @@ function getFiles() {
  * @return string $explorer HTML code to insert.
  */
 function explorerHTML() {
-    
+
     $filesArray = getFiles();
     $explorer = '';
     foreach ($filesArray as $dirname => $files) {
         $dirnameurlencoded = rawurlencode($dirname);
         $explorer .= <<<EOT
-        
+
 <div class="vignette">
     <div class="title">$dirname/</div>
         <ul>
-        
+
 EOT;
         foreach($files as $file) {
             $filenameurlencoded = rawurlencode($file['name']);
             $explorer .= <<<EOT
-            
+
             <li>
             <a href="$dirnameurlencoded/$filenameurlencoded"><img title="Right click → Save as" alt="" src="save.png"></a>
             <a href="?file=$dirnameurlencoded/$filenameurlencoded">{$file['name']}</a>
             </li>
-            
+
 EOT;
         }
         $explorer .= <<<EOT
-        
+
         </ul>
     </div>
-    
+
 EOT;
     }
     return $explorer;
@@ -91,7 +91,7 @@ EOT;
             $nameurlencoded = rawurlencode($file['name']);
             $dirnameurlencoded = rawurlencode($dirname);
             $entries[$file['mtime']] = <<<EOT
-            
+
     <entry>
         <title>$dirname/{$file['name']}</title>
         <link href="{$conf['uri']}/?file=$dirnameurlencoded/$nameurlencoded"/>
@@ -122,7 +122,7 @@ if (isset($_GET['file'])) {
         $mediatitle = $path;
         $pathurlencoded = rawurlencode($path);
         $mediacode = <<<EOT
-        
+
 <div class="fileinfo">
     File: <time datetime="$mtime">$path</time><br />
     Added: $mtime
@@ -165,7 +165,7 @@ print <<<EOT
                 $mediacode
             </div>
         </div>
-        
+
 EOT;
         /* Construct the "explorer". */
         print explorerHTML();
@@ -173,7 +173,7 @@ print <<<EOT
 
     </div>
     <div id="footer">
-        Powered by <a href="https://github.com/benpro/PHPmyLMB">PHPmyLMB</a>.
+        {$conf['footer']}
     </div>
 </body>
 </html>

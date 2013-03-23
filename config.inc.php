@@ -17,4 +17,5 @@ $conf = array(
     'title' => 'PHPmyLMP – Lightweight Media Browser',
     'desc' => "yourName's Media",
     'feed_items' => 30,
+    'footer' => 'Powered by <a href="https://github.com/benpro/PHPmyLMB">PHPmyLMB</a>.',
 );
