@@ -12,9 +12,14 @@ require('config.inc.php');
 
 /**
  * @desc Construct an array with all files found.
+ *
+ * @param string $sort Mode used for sorting files.
+ *  Default: asc
+ *  Can be: asc or mtime
+ *
  * @return array $filesArray
  */
-function getFiles() {
+function getFiles($sort = 'asc') {
 
     global $conf;
     /* Find all dir and in each dir get files. */
@@ -23,12 +28,18 @@ function getFiles() {
         $files = glob('./' . $dir . '/' . $conf['allowed_extensions'], GLOB_BRACE);
         foreach ($files as $file) {
             $name = explode("/", $file);
-            $filesValues[] = array(
+            $mtime = filemtime($file);
+            $filesValues[$mtime] = array(
                 'name' => $name[2],
-                'mtime' => filemtime($file),
+                'mtime' => $mtime,
             );
         }
-        $filesArray[$dir] = $filesValues;
+        if ($sort == 'mtime') {
+            krsort($filesValues);
+            $filesArray[$dir] = $filesValues;
+        } else { // Default to ascending.
+            $filesArray[$dir] = $filesValues;
+        }
         unset($filesValues);
     }
     return $filesArray;
@@ -40,7 +51,8 @@ function getFiles() {
  */
 function explorerHTML() {
 
-    $filesArray = getFiles();
+    (isset($_GET['sort'])) ? $sort = $_GET['sort'] : $sort = 'asc';
+    $filesArray = getFiles($sort);
     $explorer = '';
     foreach ($filesArray as $dirname => $files) {
         $dirnameurlencoded = rawurlencode($dirname);
@@ -57,7 +69,7 @@ EOT;
 
             <li>
             <a href="$dirnameurlencoded/$filenameurlencoded"><img title="Right click → Save as" alt="" src="save.png"></a>
-            <a href="?file=$dirnameurlencoded/$filenameurlencoded">{$file['name']}</a>
+            <a href="?file=$dirnameurlencoded/$filenameurlencoded&sort=$sort">{$file['name']}</a>
             </li>
 
 EOT;
@@ -166,6 +178,27 @@ print <<<EOT
                 $mediacode
             </div>
         </div>
+
+EOT;
+        $options = '';
+        if (isset($_GET['sort']) && $_GET['sort'] == 'asc') {
+            $options .= '<option value="?sort=asc" selected="selected">Ascending</option>' ."\n";
+        } else {
+            $options .= '<option value="?sort=asc">Ascending</option>' ."\n";
+        } if (isset($_GET['sort']) && $_GET['sort'] == 'mtime') {
+            $options .= "\t\t\t\t" . '<option value="?sort=mtime" selected="selected">Last uploaded files</option>';
+        } else {
+            $options .= "\t\t\t\t" . '<option value="?sort=mtime">Last uploaded files</option>';
+        }
+        print <<<EOT
+
+        <small>
+            Sort by:
+            <select onChange="if (this.value) window.location.href=this.value">
+                $options
+            </select>
+        </small>
+        <br />
 
 EOT;
         /* Construct the "explorer". */
