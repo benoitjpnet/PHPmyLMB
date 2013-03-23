@@ -45,6 +45,7 @@ function explorerHTML() {
     foreach ($filesArray as $dirname => $files) {
         $dirnameurlencoded = rawurlencode($dirname);
         $explorer .= <<<EOT
+        
 <div class="vignette">
     <div class="title">$dirname/</div>
         <ul>
@@ -53,6 +54,7 @@ EOT;
         foreach($files as $file) {
             $filenameurlencoded = rawurlencode($file['name']);
             $explorer .= <<<EOT
+            
             <li>
             <a href="$dirnameurlencoded/$filenameurlencoded"><img title="Right click → Save as" alt="" src="save.png"></a>
             <a href="?file=$dirnameurlencoded/$filenameurlencoded">{$file['name']}</a>
@@ -61,6 +63,7 @@ EOT;
 EOT;
         }
         $explorer .= <<<EOT
+        
         </ul>
     </div>
     
@@ -119,6 +122,7 @@ if (isset($_GET['file'])) {
         $mediatitle = $path;
         $pathurlencoded = rawurlencode($path);
         $mediacode = <<<EOT
+        
 <div class="fileinfo">
     File: <time datetime="$mtime">$path</time><br />
     Added: $mtime
@@ -166,9 +170,10 @@ EOT;
         /* Construct the "explorer". */
         print explorerHTML();
 print <<<EOT
+
     </div>
     <div id="footer">
-    Powered by <a href="https://github.com/benpro/PHPmyLMB">PHPmyLMB</a>.
+        Powered by <a href="https://github.com/benpro/PHPmyLMB">PHPmyLMB</a>.
     </div>
 </body>
 </html>
