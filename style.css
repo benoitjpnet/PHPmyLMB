@@ -11,11 +11,7 @@ body {
     font-weight: bold;
 }
 
-#content {
-    background-image: url(miku_nendoroid.png);
-    background-repeat: no-repeat;
-    background-position: right top;
-}
+#content {} /* Future usage? */
 
 a {
     color: black;
@@ -83,10 +79,6 @@ embed {
 .fileinfo {
     margin: 1em;
     font-family: monospace;
-}
-
-#looplink a {
-    font-size: x-large;
 }
 
 #footer {
