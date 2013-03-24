@@ -58,19 +58,19 @@ function explorerHTML() {
         $dirnameurlencoded = rawurlencode($dirname);
         $explorer .= <<<EOT
 
-<div class="vignette">
-    <div class="title">$dirname/</div>
-        <ul>
+    <div class="vignette">
+        <div class="title">$dirname/</div>
+            <ul>
 
 EOT;
         foreach($files as $file) {
             $filenameurlencoded = rawurlencode($file['name']);
             $explorer .= <<<EOT
 
-            <li>
-            <a href="$dirnameurlencoded/$filenameurlencoded"><img title="Right click → Save as" alt="" src="save.png"></a>
-            <a href="?file=$dirnameurlencoded/$filenameurlencoded&amp;sort=$sort">{$file['name']}</a>
-            </li>
+                <li>
+                    <a href="$dirnameurlencoded/$filenameurlencoded"><img title="Right click → Save as" alt="" src="save.png"></a>
+                    <a href="?file=$dirnameurlencoded/$filenameurlencoded&amp;sort=$sort">{$file['name']}</a>
+                </li>
 
 EOT;
         }
@@ -131,22 +131,23 @@ if (isset($_GET['file'])) {
     $path = urldecode($_GET['file']);
     /* Verify if the file exists and construct the embedded media. */
     if (file_exists('./' . $path)) {
-        $mtime = date(DATE_ATOM, filemtime($path));
-        $mtime_human = date(DATE_RFC822, filemtime($path));
+        $mtime = filemtime($path);
+        $mtimeATOM = date(DATE_ATOM, $mtime);
+        $mtimeHuman = date(DATE_RFC822, $mtime);
         $mediatitle = $path;
         $pathurlencoded = rawurlencode($path);
         $mediacode = <<<EOT
 
-<div class="fileinfo">
-    File: <time datetime="$mtime">$path</time><br />
-    Added: $mtime_human
-</div>
+            <div class="fileinfo">
+                File: <time datetime="$mtimeATOM">$path</time><br />
+                Added: $mtimeHuman
+            </div>
 
 EOT;
         if (strpos($path, '.webm')) {
-            $mediacode .= '<video id="media1" src="' . $pathurlencoded  .'" controls autoplay>Your browser doesn\'t support this format. Try Firefox.</video>';
+            $mediacode .= "\t\t\t" . '<video id="media1" src="' . $pathurlencoded  .'" controls="controls" autoplay="autoplay">Your browser doesn\'t support this format. Try Firefox.</video>';
         } elseif (strpos($path, '.opus') || strpos($path, '.ogg')) {
-            $mediacode .= '<audio id="media1" src="' . $pathurlencoded  .'" controls autoplay>Your browser doesn\'t support this format. Try Firefox.</audio>';
+            $mediacode .= "\t\t\t" . '<audio id="media1" src="' . $pathurlencoded  .'" controls="controls" autoplay="autoplay">Your browser doesn\'t support this format. Try Firefox.</audio>';
         }
     } else {
         header("HTTP/1.0 404 File not found");
@@ -171,14 +172,14 @@ print <<<EOT
 </head>
 <body>
 <a href="https://github.com/benpro/PHPmyLMB"><img style="position: absolute; top: 0; right: 0; border: 0;" src="forkme.png" alt="Fork me on GitHub"></a>
-    <div id="content">
-        <div style="min-height:150px;">
-            <h1>{$conf['title']}</h1>
-            <span style="font-size:small">{$conf['desc']}</span><br>
-            <div id="mediacode">
-                $mediacode
-            </div>
+<div id="content">
+    <div style="min-height:150px;">
+        <h1>{$conf['title']}</h1>
+        <span style="font-size:small">{$conf['desc']}</span><br>
+        <div id="mediacode">
+            $mediacode
         </div>
+    </div>
 
 EOT;
         $options = '';
@@ -187,26 +188,26 @@ EOT;
         } else {
             $options .= '<option value="?sort=asc">Ascending</option>' ."\n";
         } if (isset($_GET['sort']) && $_GET['sort'] == 'mtime') {
-            $options .= "\t\t\t\t" . '<option value="?sort=mtime" selected="selected">Last uploaded files</option>';
+            $options .= "\t\t\t" . '<option value="?sort=mtime" selected="selected">Last uploaded files</option>';
         } else {
-            $options .= "\t\t\t\t" . '<option value="?sort=mtime">Last uploaded files</option>';
+            $options .= "\t\t\t" . '<option value="?sort=mtime">Last uploaded files</option>';
         }
         print <<<EOT
 
-        <small>
-            Sort by:
-            <select onChange="if (this.value) window.location.href=this.value">
-                $options
-            </select>
-        </small>
-        <br />
+    <small>
+        Sort by:
+        <select onChange="if (this.value) window.location.href=this.value">
+            $options
+        </select>
+    </small>
+    <br />
 
 EOT;
         /* Construct the "explorer". */
         print explorerHTML();
 print <<<EOT
 
-    </div>
+</div>
     <div id="footer">
         {$conf['footer']}
     </div>
