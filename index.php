@@ -162,11 +162,10 @@ print <<<EOT
 <head>
     <meta charset="UTF-8">
     <title>{$conf['title']} – $mediatitle</title>
-    <meta name="description" content="{$conf['desc']}">
+    <meta name="description" content="{$conf['desc']}" />
     <link rel='stylesheet' href='style.css' type='text/css' media='screen' />
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-    <link rel="alternate" type="application/atom+xml" title="ATOM last uploaded files" href="{$conf['uri']}/?feed">
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="alternate" type="application/atom+xml" title="ATOM last uploaded files" href="{$conf['uri']}/?feed" />
     <meta name="robots" content="index" />
 </head>
 <body>
