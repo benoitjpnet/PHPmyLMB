@@ -184,11 +184,11 @@ print <<<EOT
 EOT;
         $options = '';
         if (isset($_GET['sort']) && $_GET['sort'] == 'asc') {
-            $options .= '<option value="?sort=asc" selected="selected">Ascending</option>' ."\n";
+            $options .= '<option value="?sort=asc" selected="">Ascending</option>' ."\n";
         } else {
             $options .= '<option value="?sort=asc">Ascending</option>' ."\n";
         } if (isset($_GET['sort']) && $_GET['sort'] == 'mtime') {
-            $options .= "\t\t\t" . '<option value="?sort=mtime" selected="selected">Last uploaded files</option>';
+            $options .= "\t\t\t" . '<option value="?sort=mtime" selected="">Last uploaded files</option>';
         } else {
             $options .= "\t\t\t" . '<option value="?sort=mtime">Last uploaded files</option>';
         }
