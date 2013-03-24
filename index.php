@@ -145,11 +145,11 @@ if (isset($_GET['file'])) {
 
 EOT;
         if (strpos($path, '.webm')) {
-            $mediacode .= "\t\t\t" . '<video src="' . $pathurlencoded  .'" controls="" autoplay="">Your browser doesn\'t support this format. Try Firefox.</video>';
+            $mediacode .= "\t\t\t" . '<video id="media" src="' . $pathurlencoded  .'" controls="" autoplay="">Your browser doesn\'t support this format. Try Firefox.</video>';
         } elseif (preg_match('/(.opus|.ogg)/i', $path)) {
-            $mediacode .= "\t\t\t" . '<audio src="' . $pathurlencoded  .'" controls="" autoplay="">Your browser doesn\'t support this format. Try Firefox.</audio>';
+            $mediacode .= "\t\t\t" . '<audio id="media" src="' . $pathurlencoded  .'" controls="" autoplay="">Your browser doesn\'t support this format. Try Firefox.</audio>';
         } elseif (preg_match('/(.jpg|.jpeg|.png|.webp|.svg|.gif)/i', $path)) {
-            $mediacode .= "\t\t\t" . '<img alt="' . $mediatitle . '" src="' . $pathurlencoded . '"/>';
+            $mediacode .= "\t\t\t" . '<img id="media" alt="' . $mediatitle . '" src="' . $pathurlencoded . '"/>';
         }
     } else {
         header("HTTP/1.0 404 File not found");
