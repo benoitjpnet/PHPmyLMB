@@ -12,7 +12,7 @@ $conf = array(
      * Allowed extensions, warning adding an extension will not automagically
      * works, because the code will not handle it!
      */
-    'allowed_extensions' => '*.{webm,opus,ogg}',
+    'allowed_extensions' => '*.{webm,opus,ogg,webp,png,gif,jpg,jpeg,svg}',
     'author' => 'your name',
     'title' => 'PHPmyLMP – Lightweight Media Browser',
     'desc' => "yourName's Media",
