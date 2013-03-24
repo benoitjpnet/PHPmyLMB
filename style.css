@@ -11,6 +11,8 @@ body {
     font-weight: bold;
 }
 
+#header {} /* Future usage? */
+
 #content {} /* Future usage? */
 
 a {

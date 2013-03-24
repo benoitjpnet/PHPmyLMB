@@ -173,7 +173,9 @@ print <<<EOT
     <meta name="robots" content="index" />
 </head>
 <body>
-<a href="https://github.com/benpro/PHPmyLMB"><img style="position: absolute; top: 0; right: 0; border: 0;" src="forkme.png" alt="Fork me on GitHub"></a>
+<div id="header">
+    {$conf['header']}
+</div>
 <div id="content">
     <div style="min-height:150px;">
         <h1>{$conf['title']}</h1>
