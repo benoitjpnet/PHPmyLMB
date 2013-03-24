@@ -102,7 +102,7 @@ EOT;
         foreach ($files as $file) {
             $nameurlencoded = rawurlencode($file['name']);
             $dirnameurlencoded = rawurlencode($dirname);
-            $updated = date('c', $file['mtime']);
+            $updated = date(DATE_ATOM, $file['mtime']);
             $entries[$file['mtime']] = <<<EOT
 
     <entry>
@@ -131,14 +131,15 @@ if (isset($_GET['file'])) {
     $path = urldecode($_GET['file']);
     /* Verify if the file exists and construct the embedded media. */
     if (file_exists('./' . $path)) {
-        $mtime = date('c', filemtime($path));
+        $mtime = date(DATE_ATOM, filemtime($path));
+        $mtime_human = date(DATE_RFC822, filemtime($path));
         $mediatitle = $path;
         $pathurlencoded = rawurlencode($path);
         $mediacode = <<<EOT
 
 <div class="fileinfo">
     File: <time datetime="$mtime">$path</time><br />
-    Added: $mtime
+    Added: $mtime_human
 </div>
 
 EOT;

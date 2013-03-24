@@ -19,3 +19,5 @@ $conf = array(
     'feed_items' => 30,
     'footer' => 'Powered by <a href="https://github.com/benpro/PHPmyLMB">PHPmyLMB</a>.',
 );
+/* Set wanted timezone. */
+date_default_timezone_set('UTC');
