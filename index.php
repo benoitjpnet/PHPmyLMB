@@ -145,9 +145,9 @@ if (isset($_GET['file'])) {
 
 EOT;
         if (strpos($path, '.webm')) {
-            $mediacode .= "\t\t\t" . '<video id="media1" src="' . $pathurlencoded  .'" controls="controls" autoplay="autoplay">Your browser doesn\'t support this format. Try Firefox.</video>';
+            $mediacode .= "\t\t\t" . '<video src="' . $pathurlencoded  .'" controls="" autoplay="">Your browser doesn\'t support this format. Try Firefox.</video>';
         } elseif (strpos($path, '.opus') || strpos($path, '.ogg')) {
-            $mediacode .= "\t\t\t" . '<audio id="media1" src="' . $pathurlencoded  .'" controls="controls" autoplay="autoplay">Your browser doesn\'t support this format. Try Firefox.</audio>';
+            $mediacode .= "\t\t\t" . '<audio src="' . $pathurlencoded  .'" controls="" autoplay="">Your browser doesn\'t support this format. Try Firefox.</audio>';
         }
     } else {
         header("HTTP/1.0 404 File not found");
