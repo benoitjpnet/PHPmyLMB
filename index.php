@@ -147,6 +147,45 @@ EOT;
     exit(0);
 }
 
+/* M3U playlist part. */
+if (isset($_GET['playlist'])) {
+    header('Content-Type: application/octet-stream');
+	header('Content-Disposition: attachment; filename="playlist.xspf"');
+
+    print <<<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<playlist xmlns="http://xspf.org/ns/0/" xmlns:vlc="http://www.videolan.org/vlc/playlist/ns/0/" version="1">
+<title>playlist</title>
+	<trackList>
+EOT;
+    $filesArray = getFiles();
+    foreach ($filesArray as $dirname => $files) {
+        foreach ($files as $file) {
+		if (preg_match('/(.webm|.opus|.ogg)/i', $file['name'])) {
+            $nameurlencoded = rawurlencode($file['name']);
+            $dirnameurlencoded = rawurlencode($dirname);
+            $entries[$file['mtime']] = <<<EOT
+
+		<track>
+			<title>$dirname/{$file['name']}</title>
+			<location>{$conf['uri']}/$dirnameurlencoded/$nameurlencoded</location>
+		</track>
+EOT;
+			}
+        }
+    }
+    //krsort($entries);
+    foreach ($entries as $entry) {
+        print $entry;
+    }
+print <<<EOT
+
+	</trackList>
+</playlist>
+EOT;
+    exit(0);
+}
+
 /*
  * File viewing part. When user has clicked on a file.
  * Generates the embedded media.
