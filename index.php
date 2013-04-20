@@ -147,40 +147,44 @@ EOT;
     exit(0);
 }
 
-/* M3U playlist part. */
+/* XSPF playlist part. */
 if (isset($_GET['playlist'])) {
+    (isset($_GET['sort'])) ? $sort = $_GET['sort'] : $sort = 'asc';
     header('Content-Type: application/octet-stream');
-	header('Content-Disposition: attachment; filename="playlist.xspf"');
-
+    header('Content-Disposition: attachment; filename="playlist.xspf"');
     print <<<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <playlist xmlns="http://xspf.org/ns/0/" xmlns:vlc="http://www.videolan.org/vlc/playlist/ns/0/" version="1">
-<title>playlist</title>
-	<trackList>
+<title>Playlist of {$conf['title']}</title>
+    <trackList>
 EOT;
+
     $filesArray = getFiles();
     foreach ($filesArray as $dirname => $files) {
         foreach ($files as $file) {
-		if (preg_match('/(.webm|.opus|.ogg)/i', $file['name'])) {
-            $nameurlencoded = rawurlencode($file['name']);
-            $dirnameurlencoded = rawurlencode($dirname);
-            $entries[$file['mtime']] = <<<EOT
+            if (preg_match('/(.webm|.opus|.ogg)/i', $file['name'])) {
+                $nameurlencoded = rawurlencode($file['name']);
+                $dirnameurlencoded = rawurlencode($dirname);
+                $entries[$file['mtime']] = <<<EOT
 
-		<track>
-			<title>$dirname/{$file['name']}</title>
-			<location>{$conf['uri']}/$dirnameurlencoded/$nameurlencoded</location>
-		</track>
+            <track>
+                <title>$dirname/{$file['name']}</title>
+                <location>{$conf['uri']}/$dirnameurlencoded/$nameurlencoded</location>
+            </track>
+
 EOT;
-			}
+            }
         }
     }
-    //krsort($entries);
+    if ($sort == 'mtime') {
+        krsort($entries);
+    } // Else, default is asc mode.
     foreach ($entries as $entry) {
         print $entry;
     }
 print <<<EOT
 
-	</trackList>
+    </trackList>
 </playlist>
 EOT;
     exit(0);
@@ -267,7 +271,9 @@ EOT;
         Sort by:
         <select onChange="if (this.value) window.location.href=this.value">
             $options
-        </select>
+        </select><br />
+        Download the <a href="?playlist">playlist</a> in XSPF format.<br />
+        You can also download the <a href="?playlist&sort=mtime">playlist</a> sorted by "last uploaded files".
     </small>
     <br />
 
