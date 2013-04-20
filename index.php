@@ -1,10 +1,9 @@
 <?php
 /*
- * PHPmyLMP, a Lightweight media browser.
- * Generate a web page with media contents such as videos and audios.
+ * PHPmyLMB is a lightweight media browser.
+ * It generates a web page with media contents such as videos and audios.
  * Very useful to share with people :)
- * Forked from mitsumedia (https://github.com/mitsukarenai/mitsumedia) and
- * *really* redesigned code part.
+ * Project initially forked from @mitsukarenai.
  * LICENCE is WTFPL.
  */
 
@@ -22,7 +21,7 @@ require('config.inc.php');
 function getFiles($sort = 'asc') {
 
     global $conf;
-    /* Find all dir and in each dir get files. */
+    /* Search for files (which are allowed_extensions) in all directories. */
     $directories = glob('*', GLOB_ONLYDIR);
     foreach ($directories as $dir) {
         $files = glob('./' . $dir . '/' . $conf['allowed_extensions'], GLOB_BRACE);
@@ -47,7 +46,7 @@ function getFiles($sort = 'asc') {
 
 /**
  * @desc Contruct the explorer HTML part.
- * @return string $explorer HTML code to insert.
+ * @return string $explorer HTML code to generate.
  */
 function explorerHTML() {
 
@@ -126,7 +125,10 @@ EOT;
     exit(0);
 }
 
-/* File part. When user has clicked on a file. Generate the embeded media. */
+/*
+ * File viewing part. When user has clicked on a file.
+ * Generates the embedded media.
+ */
 if (isset($_GET['file'])) {
     $path = urldecode($_GET['file']);
     /* Verify if the file exists and construct the embedded media. */
@@ -144,6 +146,7 @@ if (isset($_GET['file'])) {
             </div>
 
 EOT;
+        /* Handle file types. */
         if (strpos($path, '.webm')) {
             $mediacode .= "\t\t\t" . '<video id="media" src="' . $pathurlencoded  .'" controls="" autoplay="">Your browser doesn\'t support this format. Try Firefox.</video>';
         } elseif (preg_match('/(.opus|.ogg)/i', $path)) {
@@ -158,7 +161,7 @@ EOT;
     }
 }
 
-/* Below the HTML part. */
+/* Below, the main HTML part. */
 $mediacode = (isset($mediacode)) ? $mediacode : '';
 $mediatitle = (isset($mediatitle)) ? $mediatitle : 'Home';
 print <<<EOT
@@ -186,6 +189,7 @@ print <<<EOT
     </div>
 
 EOT;
+        /* User can choose to sort files. */
         $options = '';
         if (isset($_GET['sort']) && $_GET['sort'] == 'asc') {
             $options .= '<option value="?sort=asc" selected="">Ascending</option>' ."\n";

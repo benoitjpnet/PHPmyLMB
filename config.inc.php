@@ -5,11 +5,11 @@
 $conf = array(
     /*
      * Set URI of your PHPmyLMB installation. Do not set the last trailing
-     * slash.
+     * slash!
      */
     'uri' => 'http://example.com/media',
     /*
-     * Allowed extensions, warning adding an extension will not automagically
+     * Allowed extensions. Warning adding an extension will not automagically
      * works, because the code will not handle it!
      */
     'allowed_extensions' => '*.{webm,opus,ogg,webp,png,gif,jpg,jpeg,svg}',
