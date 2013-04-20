@@ -16,7 +16,7 @@ body {
 #content {} /* Future usage? */
 
 a {
-    color: black;
+    color: indigo;
     text-decoration: none;
     font-size: small;
 }
