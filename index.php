@@ -21,6 +21,15 @@ require('config.inc.php');
 function getFiles($sort = 'asc') {
 
     global $conf;
+    /* If results are cached and cache not expired, use it. */
+    if ($conf['cache_enabled'] && is_readable($conf['cache_path'])) {
+        if ((time() - filemtime($conf['cache_path'])) <= $conf['cache_expire']) {
+            $fileCache = fopen($conf['cache_path'], 'r');
+            $contents = fread($fileCache, filesize($conf['cache_path']));
+            fclose($fileCache);
+            return unserialize($contents);
+        }
+    }
     /* Search for files (which are allowed_extensions) in all directories. */
     $directories = glob('*', GLOB_ONLYDIR);
     foreach ($directories as $dir) {
@@ -40,6 +49,19 @@ function getFiles($sort = 'asc') {
             $filesArray[$dir] = $filesValues;
         }
         unset($filesValues);
+    }
+    /* Store results in the cache & return it. */
+    if ($conf['cache_enabled']) {
+        $fileCache = fopen($conf['cache_path'], 'w');
+        if ($fileCache !== false) {
+            fwrite($fileCache, serialize($filesArray));
+            fclose($fileCache);
+        } else {
+            trigger_error(
+                "Cache is enabled but the file cache can't be writed!",
+                E_USER_WARNING
+            );
+        }
     }
     return $filesArray;
 }
