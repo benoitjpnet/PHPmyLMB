@@ -58,7 +58,7 @@ function getFiles($sort = 'asc') {
             fclose($fileCache);
         } else {
             trigger_error(
-                "Cache is enabled but the file cache can't be writed!",
+                'Cache is enabled but the file used for cache cannot be written!',
                 E_USER_WARNING
             );
         }
