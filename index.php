@@ -221,7 +221,7 @@ EOT;
             $mediacode .= "\t\t\t" . '<img id="media" alt="' . $mediatitle . '" src="' . $pathurlencoded . '"/>';
         }
     } else {
-        header("HTTP/1.0 404 File not found");
+        header("HTTP/1.1 404 File not found");
         print "<h1>404 File not found</h1>";
         exit(1);
     }
