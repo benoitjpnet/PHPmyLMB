@@ -22,45 +22,46 @@ function getFiles($sort = 'asc') {
 
     global $conf;
     /* If results are cached and cache not expired, use it. */
-    if ($conf['cache_enabled'] && is_readable($conf['cache_path'])) {
-        if ((time() - filemtime($conf['cache_path'])) <= $conf['cache_expire']) {
-            $fileCache = fopen($conf['cache_path'], 'r');
-            $contents = fread($fileCache, filesize($conf['cache_path']));
+    if ($conf['cache_enabled'] && is_readable($conf['cache_path'].$sort)) {
+        if ((time() - filemtime($conf['cache_path'].$sort)) <= $conf['cache_expire']) {
+            $fileCache = fopen($conf['cache_path'].$sort, 'r');
+            $contents = fread($fileCache, filesize($conf['cache_path'].$sort));
             fclose($fileCache);
             return unserialize($contents);
         }
-    }
-    /* Search for files (which are allowed_extensions) in all directories. */
-    $directories = glob('*', GLOB_ONLYDIR);
-    foreach ($directories as $dir) {
-        $files = glob('./' . $dir . '/' . $conf['allowed_extensions'], GLOB_BRACE);
-        foreach ($files as $file) {
-            $name = explode("/", $file);
-            $mtime = filemtime($file);
-            $filesValues[$mtime] = array(
-                'name' => $name[2],
-                'mtime' => $mtime,
-            );
+    } else {
+        /* Search for files (which are allowed_extensions) in all directories. */
+        $directories = glob('*', GLOB_ONLYDIR);
+        foreach ($directories as $dir) {
+            $files = glob('./' . $dir . '/' . $conf['allowed_extensions'], GLOB_BRACE);
+            foreach ($files as $file) {
+                $name = explode("/", $file);
+                $mtime = filemtime($file);
+                $filesValues[$mtime] = array(
+                    'name' => $name[2],
+                    'mtime' => $mtime,
+                );
+            }
+            if ($sort == 'mtime') {
+                krsort($filesValues);
+                $filesArray[$dir] = $filesValues;
+            } else { // Default to ascending.
+                $filesArray[$dir] = $filesValues;
+            }
+            unset($filesValues);
         }
-        if ($sort == 'mtime') {
-            krsort($filesValues);
-            $filesArray[$dir] = $filesValues;
-        } else { // Default to ascending.
-            $filesArray[$dir] = $filesValues;
-        }
-        unset($filesValues);
-    }
-    /* Store results in the cache & return it. */
-    if ($conf['cache_enabled']) {
-        $fileCache = fopen($conf['cache_path'], 'w');
-        if ($fileCache !== false) {
-            fwrite($fileCache, serialize($filesArray));
-            fclose($fileCache);
-        } else {
-            trigger_error(
-                'Cache is enabled but the file used for cache cannot be written!',
-                E_USER_WARNING
-            );
+        /* Store results in the cache & return it. */
+        if ($conf['cache_enabled']) {
+            $fileCache = fopen($conf['cache_path'].$sort, 'w');
+            if ($fileCache !== false) {
+                fwrite($fileCache, serialize($filesArray));
+                fclose($fileCache);
+            } else {
+                trigger_error(
+                    'Cache is enabled but the file used for cache cannot be written!',
+                    E_USER_WARNING
+                );
+            }
         }
     }
     return $filesArray;

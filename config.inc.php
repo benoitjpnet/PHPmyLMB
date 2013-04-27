@@ -13,8 +13,13 @@ $conf = array(
      * works, because the code will not handle it!
      */
     'allowed_extensions' => '*.{webm,opus,ogg,webp,png,gif,jpg,jpeg,svg}',
+    /*
+     * 2 file are used for cache, cache_asc and cache_mtime.
+     * Need to be writable!
+     * If you want to clear the cache, just delete cache_* files.
+     */
     'cache_enabled' => true,
-    'cache_path' => './files.cache', // Need to be writable!
+    'cache_path' => './cache_',
     'cache_expire' => 1800, // Validity of the cache in seconds.
     'author' => 'your name',
     'title' => 'PHPmyLMP – Lightweight Media Browser',
