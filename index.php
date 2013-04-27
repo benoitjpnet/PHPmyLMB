@@ -281,7 +281,7 @@ EOT;
 EOT;
         /* Construct the "explorer". */
         print explorerHTML();
-print <<<EOT
+        print <<<EOT
 
 </div>
     <div id="footer">
