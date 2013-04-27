@@ -14,7 +14,7 @@ $conf = array(
      */
     'allowed_extensions' => '*.{webm,opus,ogg,webp,png,gif,jpg,jpeg,svg}',
     /*
-     * 2 file are used for cache, cache_asc and cache_mtime.
+     * 2 files are used for cache, cache_asc and cache_mtime.
      * Need to be writable!
      * If you want to clear the cache, just delete cache_* files.
      */
