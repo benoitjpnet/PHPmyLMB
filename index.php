@@ -183,7 +183,7 @@ EOT;
     foreach ($entries as $entry) {
         print $entry;
     }
-print <<<EOT
+    print <<<EOT
 
     </trackList>
 </playlist>
