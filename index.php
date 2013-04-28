@@ -29,39 +29,38 @@ function getFiles($sort = 'asc') {
             fclose($fileCache);
             return unserialize($contents);
         }
-    } else {
-        /* Search for files (which are allowed_extensions) in all directories. */
-        $directories = glob('*', GLOB_ONLYDIR);
-        foreach ($directories as $dir) {
-            $files = glob('./' . $dir . '/' . $conf['allowed_extensions'], GLOB_BRACE);
-            foreach ($files as $file) {
-                $name = explode("/", $file);
-                $mtime = filemtime($file);
-                $filesValues[$mtime] = array(
-                    'name' => $name[2],
-                    'mtime' => $mtime,
-                );
-            }
-            if ($sort == 'mtime') {
-                krsort($filesValues);
-                $filesArray[$dir] = $filesValues;
-            } else { // Default to ascending.
-                $filesArray[$dir] = $filesValues;
-            }
-            unset($filesValues);
+    }
+    /* Search for files (which are allowed_extensions) in all directories. */
+    $directories = glob('*', GLOB_ONLYDIR);
+    foreach ($directories as $dir) {
+        $files = glob('./' . $dir . '/' . $conf['allowed_extensions'], GLOB_BRACE);
+        foreach ($files as $file) {
+            $name = explode("/", $file);
+            $mtime = filemtime($file);
+            $filesValues[$mtime] = array(
+                'name' => $name[2],
+                'mtime' => $mtime,
+            );
         }
-        /* Store results in the cache & return it. */
-        if ($conf['cache_enabled']) {
-            $fileCache = fopen($conf['cache_path'].$sort, 'w');
-            if ($fileCache !== false) {
-                fwrite($fileCache, serialize($filesArray));
-                fclose($fileCache);
-            } else {
-                trigger_error(
-                    'Cache is enabled but the file used for cache cannot be written!',
-                    E_USER_WARNING
-                );
-            }
+        if ($sort == 'mtime') {
+            krsort($filesValues);
+            $filesArray[$dir] = $filesValues;
+        } else { // Default to ascending.
+            $filesArray[$dir] = $filesValues;
+        }
+        unset($filesValues);
+    }
+    /* Store results in the cache & return it. */
+    if ($conf['cache_enabled']) {
+        $fileCache = fopen($conf['cache_path'].$sort, 'w');
+        if ($fileCache !== false) {
+            fwrite($fileCache, serialize($filesArray));
+            fclose($fileCache);
+        } else {
+            trigger_error(
+                'Cache is enabled but the file used for cache cannot be written!',
+                E_USER_WARNING
+            );
         }
     }
     return $filesArray;
