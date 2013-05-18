@@ -273,7 +273,7 @@ EOT;
             $options
         </select><br />
         Download the <a href="?playlist">playlist</a> in XSPF format.<br />
-        You can also download the <a href="?playlist&sort=mtime">playlist</a> sorted by "last uploaded files".
+        You can also download the <a href="?playlist&amp;sort=mtime">playlist</a> sorted by "last uploaded files".
     </small>
     <br />
 
