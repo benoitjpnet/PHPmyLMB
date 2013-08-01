@@ -72,7 +72,12 @@ function getFiles($sort = 'asc') {
  */
 function explorerHTML() {
 
-    (isset($_GET['sort'])) ? $sort = $_GET['sort'] : $sort = 'asc';
+    /* Sort can be only mtime or asc. */
+    if (isset($_GET['sort']) && ($_GET['sort'] == 'mtime')) {
+        $sort = 'mtime';
+    } else {
+       $sort = 'asc';
+    }
     $filesArray = getFiles($sort);
     $explorer = '';
     foreach ($filesArray as $dirname => $files) {
