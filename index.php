@@ -221,6 +221,8 @@ EOT;
             $mediacode .= "\t\t\t" . '<video id="media" src="' . $pathurlencoded  .'" controls="" autoplay="">Your browser doesn\'t support this format. Try Firefox.</video>';
         } elseif (preg_match('/(.opus|.ogg)/i', $path)) {
             $mediacode .= "\t\t\t" . '<audio id="media" src="' . $pathurlencoded  .'" controls="" autoplay="">Your browser doesn\'t support this format. Try Firefox.</audio>';
+        } elseif (strpos($path, '.pdf')) {
+            $mediacode .= "\t\t\t" . '<embed src="' . $pathurlencoded  .'#view=Fit">';
         } elseif (preg_match('/(.jpg|.jpeg|.png|.webp|.svg|.gif)/i', $path)) {
             $mediacode .= "\t\t\t" . '<img id="media" alt="' . $mediatitle . '" src="' . $pathurlencoded . '"/>';
         }
