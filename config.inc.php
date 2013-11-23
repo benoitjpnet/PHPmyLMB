@@ -12,7 +12,7 @@ $conf = array(
      * Allowed extensions. Warning adding an extension will not automagically
      * works, because the code will not handle it!
      */
-    'allowed_extensions' => '*.{webm,opus,ogg,webp,png,gif,jpg,jpeg,svg,webm}',
+    'allowed_extensions' => '*.{webm,opus,ogg,webp,png,gif,jpg,jpeg,svg,pdf}',
     /*
      * 2 files are used for cache, cache_asc and cache_mtime.
      * Need to be writable!
