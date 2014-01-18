@@ -132,14 +132,16 @@ EOT;
             $nameurlencoded = rawurlencode($file['name']);
             $dirnameurlencoded = rawurlencode($dirname);
             $updated = date(DATE_ATOM, $file['mtime']);
+            $name = htmlentities($file['name'], ENT_COMPAT | ENT_XML1, 'UTF-8');
             $entries[$file['mtime']] = <<<EOT
 
     <entry>
-        <title>$dirname/{$file['name']}</title>
+        <title type="html">$dirname/$name</title>
         <link href="{$conf['uri']}/?file=$dirnameurlencoded/$nameurlencoded"/>
         <id>{$conf['uri']}/?file=$dirnameurlencoded/$nameurlencoded</id>
         <updated>$updated</updated>
-        <author><name>{$conf['author']}</name></author><summary>{$file['name']}</summary>
+        <author><name>{$conf['author']}</name></author>
+        <summary type="html">$name</summary>
     </entry>
 
 EOT;
