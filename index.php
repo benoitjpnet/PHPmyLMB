@@ -7,7 +7,7 @@
  * LICENCE is WTFPL.
  */
 
-require('config.inc.php');
+require 'config.inc.php';
 
 /**
  * @desc Construct an array with all files found.
@@ -18,8 +18,8 @@ require('config.inc.php');
  *
  * @return array $filesArray
  */
-function getFiles($sort = 'asc') {
-
+function getFiles($sort = 'asc')
+{
     global $conf;
     /* If results are cached and cache not expired, use it. */
     if ($conf['cache_enabled'] && is_readable($conf['cache_path'].$sort)) {
@@ -27,6 +27,7 @@ function getFiles($sort = 'asc') {
             $fileCache = fopen($conf['cache_path'].$sort, 'r');
             $contents = fread($fileCache, filesize($conf['cache_path'].$sort));
             fclose($fileCache);
+
             return unserialize($contents);
         }
     }
@@ -63,6 +64,7 @@ function getFiles($sort = 'asc') {
             );
         }
     }
+
     return $filesArray;
 }
 
@@ -70,8 +72,8 @@ function getFiles($sort = 'asc') {
  * @desc Contruct the explorer HTML part.
  * @return string $explorer HTML code to generate.
  */
-function explorerHTML() {
-
+function explorerHTML()
+{
     /* Sort can be only mtime or asc. */
     if (isset($_GET['sort']) && ($_GET['sort'] == 'mtime')) {
         $sort = 'mtime';
@@ -89,7 +91,7 @@ function explorerHTML() {
             <ul>
 
 EOT;
-        foreach($files as $file) {
+        foreach ($files as $file) {
             $filenameurlencoded = rawurlencode($file['name']);
             $explorer .= <<<EOT
 
@@ -107,6 +109,7 @@ EOT;
 
 EOT;
     }
+
     return $explorer;
 }
 
@@ -296,4 +299,3 @@ EOT;
 </body>
 </html>
 EOT;
-?>
