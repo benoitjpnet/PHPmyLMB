@@ -230,7 +230,7 @@ EOT;
         } elseif (strpos($path, '.pdf')) {
             $mediacode .= "\t\t\t" . '<embed src="' . $pathurlencoded  .'#view=Fit">';
         } elseif (preg_match('/(.jpg|.jpeg|.png|.webp|.svg|.gif)/i', $path)) {
-            $mediacode .= "\t\t\t" . '<img id="media" alt="' . $mediatitle . '" src="' . $pathurlencoded . '"/>';
+            $mediacode .= "\t\t\t" . '<a title="' . $mediatitle . '" href="' . $pathurlencoded . '"><img id="media" alt="' . $mediatitle . '" src="' . $pathurlencoded . '"/></a>';
         }
     } else {
         header("HTTP/1.1 404 File not found");
@@ -249,6 +249,7 @@ print <<<EOT
     <title>{$conf['title']} – $mediatitle</title>
     <meta name="description" content="{$conf['desc']}" />
     <link rel='stylesheet' href='style.css' type='text/css' media='screen' />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=yes">
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="alternate" type="application/atom+xml" title="ATOM last uploaded files" href="{$conf['uri']}/?feed" />
     <meta name="robots" content="index" />
