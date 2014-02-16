@@ -212,7 +212,8 @@ if (isset($_GET['file'])) {
         $mtimeATOM = date(DATE_ATOM, $mtime);
         $mtimeHuman = date(DATE_RFC822, $mtime);
         $mediatitle = $path;
-        $pathurlencoded = rawurlencode($path);
+        $pathinfo = pathinfo($path);
+        $pathurlencoded = rawurlencode($pathinfo['dirname']) . '/' . rawurlencode($pathinfo['basename']);
         $mediacode = <<<EOT
 
             <div class="fileinfo">
