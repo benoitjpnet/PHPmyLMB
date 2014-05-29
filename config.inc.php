@@ -30,3 +30,10 @@ $conf = array(
 );
 /* Set wanted timezone. */
 date_default_timezone_set('UTC');
+/*
+ * Have filenames with UTF-8 characters?
+ * Be sure to have a locale with UTF-8 support installed on your server and
+ * use it with setlocale php's function.
+ * Default to en_US.UTF-8.
+ */
+setlocale(LC_CTYPE, 'en_US.UTF-8');
