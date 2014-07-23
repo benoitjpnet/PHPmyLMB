@@ -230,7 +230,12 @@ EOT;
         switch($pathinfo['extension']) {
         /* Video */
         case 'webm':
-            $mediacode .= "\t\t\t" . '<video id="media" src="' . $pathurlencoded  .'" controls="" autoplay="">Your browser doesn\'t support this format. Try Firefox.</video>';
+            /* Load VTT subtitles if any.*/
+            if (file_exists('./' . $path . '.vtt')) {
+                $mediacode .= "\t\t\t" . '<video id="media" src="' . $pathurlencoded  .'" controls="" autoplay=""><track src="' . $pathurlencoded . '.vtt" kind="subtitles" default>Your browser doesn\'t support this format. Try Firefox.</video><br>[<a title="This stream has soft subtitles displayed in HTML5. Click to download the VTT file" href="' . $pathurlencoded . '.vtt">Download subtitles?</a>]';
+            } else {
+                $mediacode .= "\t\t\t" . '<video id="media" src="' . $pathurlencoded  .'" controls="" autoplay="">Your browser doesn\'t support this format. Try Firefox.</video>';
+            }
             break;
         /* Audio */
         case 'opus':

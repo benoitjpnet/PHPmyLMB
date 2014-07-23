@@ -7,10 +7,10 @@ Project initially forked from @mitsukarenai.
 
 Currently supported:
 
- - Videos in WebM.
- - Audios in OGG or Opus.
- - Pictures in JPG, PNG, GIF, WebP and SVG.
- - PDF (embedded support only on Firefox).
+ - Videos in WebM `.webm` & WebVTT subtitles `.webm.vtt`.
+ - Audios in OGG or Opus. `.ogg` `.opus`
+ - Pictures in JPG, PNG, GIF, WebP and SVG. `.jpg` `.jpeg` `.gif` `.webp` `.svg`
+ - PDF (embedded support only on Firefox). `.pdf`
 
 ![screenshot](https://www.benpro.fr/media/Screenshots/phpmylmb.png)
 
