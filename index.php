@@ -227,18 +227,38 @@ if (isset($_GET['file'])) {
 
 EOT;
         /* Handle file types. */
-        if (strpos($path, '.webm')) {
+        switch($pathinfo['extension']) {
+        /* Video */
+        case 'webm':
             $mediacode .= "\t\t\t" . '<video id="media" src="' . $pathurlencoded  .'" controls="" autoplay="">Your browser doesn\'t support this format. Try Firefox.</video>';
-        } elseif (preg_match('/(.opus|.ogg)/i', $path)) {
+            break;
+        /* Audio */
+        case 'opus':
+        case 'ogg':
             $mediacode .= "\t\t\t" . '<audio id="media" src="' . $pathurlencoded  .'" controls="" autoplay="">Your browser doesn\'t support this format. Try Firefox.</audio>';
-        } elseif (strpos($path, '.pdf')) {
+            break;
+        /* PDF */
+        case 'pdf':
             $mediacode .= "\t\t\t" . '<embed src="' . $pathurlencoded  .'#view=Fit">';
-        } elseif (preg_match('/(.jpg|.jpeg|.png|.webp|.svg|.gif)/i', $path)) {
+            break;
+        /* Picture */
+        case 'jpg':
+        case 'jpeg':
+        case 'png':
+        case 'webp':
+        case 'svg':
+        case 'gif':
             $mediacode .= "\t\t\t" . '<a title="' . $mediatitle . '" href="' . $pathurlencoded . '"><img id="media" alt="' . $mediatitle . '" src="' . $pathurlencoded . '"/></a>';
+            break;
+        /*  */
+        default:
+            header("415 Unsupported Media Type");
+            print "<h1>415 Unsupported Media Type</h1>";
+            exit(1);
         }
     } else {
-        header("HTTP/1.1 404 File not found");
-        print "<h1>404 File not found</h1>";
+        header("404 Not Found");
+        print "<h1>404 Not Found</h1>";
         exit(1);
     }
 }
