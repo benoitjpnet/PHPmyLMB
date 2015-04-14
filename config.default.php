@@ -1,6 +1,7 @@
 <?php
 /*
- * Configuration file for PHPmyLMB.
+ * Default configuration file for PHPmyLMB.
+ * You should not edit directly this file, but copy it as config.local.php.
  */
 $conf = array(
     /*
@@ -21,6 +22,9 @@ $conf = array(
     'cache_enabled' => true,
     'cache_path' => './cache_',
     'cache_expire' => 1800, // Validity of the cache in seconds.
+    /*
+     * Theme related stuff.
+     */
     'author' => 'your name',
     'title' => 'PHPmyLMP – Lightweight Media Browser',
     'desc' => "yourName's Media",

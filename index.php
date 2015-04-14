@@ -7,7 +7,11 @@
  * LICENCE is WTFPL.
  */
 
-require 'config.inc.php';
+if(file_exists('config.local.php')) {
+    require 'config.local.php';
+} else {
+    require 'config.default.php';
+}
 
 /**
  * @desc Construct an array with all files found.
@@ -240,6 +244,7 @@ EOT;
 }
 
 /* Below, the main HTML part. */
+$stylefile = (file_exists('style.local.css')) ? 'style.local.css' : 'style.default.css';
 $mediacode = (isset($mediacode)) ? $mediacode : '';
 $mediatitle = (isset($mediatitle)) ? $mediatitle : 'Home';
 print <<<EOT
@@ -248,7 +253,7 @@ print <<<EOT
     <meta charset="UTF-8">
     <title>{$conf['title']} – $mediatitle</title>
     <meta name="description" content="{$conf['desc']}" />
-    <link rel='stylesheet' href='style.css' type='text/css' media='screen' />
+    <link rel='stylesheet' href='{$stylefile}' type='text/css' media='screen' />
     <meta name="viewport" content="initial-scale=1.0, user-scalable=yes">
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="alternate" type="application/atom+xml" title="ATOM last uploaded files" href="{$conf['uri']}/?feed" />
