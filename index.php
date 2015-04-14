@@ -179,11 +179,12 @@ EOT;
             if (preg_match('/(.webm|.opus|.ogg)/i', $file['name'])) {
                 $nameurlencoded = rawurlencode($file['name']);
                 $dirnameurlencoded = rawurlencode($dirname);
-                $filename = htmlentities($file['name']);
+                $filename = htmlspecialchars($file['name']);
+                $dirname = htmlspecialchars($dirname);
                 $entries[$file['mtime']] = <<<EOT
 
             <track>
-                <title>$dirname/{$filename}</title>
+                <title>$dirname/$filename</title>
                 <location>{$conf['uri']}/$dirnameurlencoded/$nameurlencoded</location>
             </track>
 
