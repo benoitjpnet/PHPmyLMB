@@ -10,6 +10,9 @@ Currently supported:
  - Videos in WebM.
  - Audios in OGG or Opus.
  - Pictures in JPG, PNG, GIF, WebP and SVG.
+ - PDF (embedded support only on Firefox).
+
+![screenshot](https://www.benpro.fr/media/Screenshots/phpmylmb.png)
 
 Installation
 ============
@@ -22,4 +25,10 @@ Installation
 Upgrade
 =======
 
-git pull --rebase (And eventually fix when there is conflicts).
+git pull --rebase (And eventually fix when there are conflicts).
+
+Top contributors
+============
+
+ - Benoît.S « Benpro » - https://www.benpro.fr (Sponsorized by evolix.com)
+ - Mitsukarenai - https://suumitsu.eu
