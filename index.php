@@ -35,6 +35,7 @@ function getFiles($sort = 'asc')
             return unserialize($contents);
         }
     }
+    $id=0;
     /* Search for files (which are allowed_extensions) in all directories. */
     $directories = glob('*', GLOB_ONLYDIR);
     foreach ($directories as $dir) {
@@ -42,18 +43,43 @@ function getFiles($sort = 'asc')
         foreach ($files as $file) {
             $name = explode("/", $file);
             $mtime = filemtime($file);
-            $filesValues[$mtime] = array(
+            /*
+             * Obtain extended details with mediainfo binary and save it to
+             * .info file if it doesn't exists.
+             */
+             //TODO: Check if mediainfo is enabled and availible.
+            if (!file_exists($file . '.info')) {
+                ob_start();
+                $fileEscaped = escapeshellcmd($file);
+                $fileEscaped = str_replace(' ', '\ ', $fileEscaped);
+                passthru($conf['mediainfo'] . ' ' .  $fileEscaped);
+                $fileInfo = fopen($file .  '.info', 'w');
+                fwrite($fileInfo, ob_get_contents());
+                fclose($fileInfo);
+                ob_end_clean();
+            }
+            /* Read .info file. */
+            $fileInfo = fopen($file . '.info', 'r');
+            $extendedDetails = fread($fileInfo, filesize($file . '.info'));
+            fclose($fileInfo);
+            /* Store obtained details about the media. */
+            $id++;
+            $filesArray[$id] = array(
+                'path' => $file,
+                'dirname' => $name[1],
                 'name' => $name[2],
                 'mtime' => $mtime,
+                'extendedDetails' => $extendedDetails,
             );
         }
-        if ($sort == 'mtime') {
-            krsort($filesValues);
-            $filesArray[$dir] = $filesValues;
-        } else { // Default to ascending.
-            $filesArray[$dir] = $filesValues;
-        }
-        unset($filesValues);
+        //TODO: Re-enable sort options.
+//         if ($sort == 'mtime') {
+//             krsort($filesValues);
+//             $filesArray[$dir] = $filesValues;
+//         } else { // Default to ascending.
+//             $filesArray[$dir] = $filesValues;
+//         }
+//         unset($filesValues);
     }
     /* Store results in the cache & return it. */
     if ($conf['cache_enabled']) {
@@ -68,7 +94,7 @@ function getFiles($sort = 'asc')
             );
         }
     }
-
+    
     return $filesArray;
 }
 
@@ -86,18 +112,21 @@ function explorerHTML()
     }
     $filesArray = getFiles($sort);
     $explorer = '';
-    foreach ($filesArray as $dirname => $files) {
-        $dirnameurlencoded = rawurlencode($dirname);
-        $explorer .= <<<EOT
+    $lastDirname = '';
+    foreach ($filesArray as $id => $file) {
+        echo ("if {$file['dirname']} != $lastDirname");
+        if ($file['dirname'] != $lastDirname) {
+            $dirnameurlencoded = rawurlencode($file['dirname']);
+            $explorer .= <<<EOT
 
     <div class="vignette">
-        <div class="title">$dirname/</div>
+        <div class="title">{$file['dirname']}/</div>
             <ul>
 
 EOT;
-        foreach ($files as $file) {
-            $filenameurlencoded = rawurlencode($file['name']);
-            $explorer .= <<<EOT
+        }
+        $filenameurlencoded = rawurlencode($file['name']);
+        $explorer .= <<<EOT
 
                 <li>
                     <a href="$dirnameurlencoded/$filenameurlencoded"><img title="Right click → Save as" alt="" src="save.png"></a>
@@ -105,15 +134,19 @@ EOT;
                 </li>
 
 EOT;
-        }
-        $explorer .= <<<EOT
+        
+        if ($file['dirname'] != $lastDirname) {
+            $explorer .= <<<EOT
 
-        </ul>
-    </div>
+            </ul>
+        </div>
 
 EOT;
-    }
-
+        $lastDirname = $file['dirname'];
+        }
+    } 
+    $explorer .= '</div>';
+    
     return $explorer;
 }
 
