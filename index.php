@@ -63,6 +63,8 @@ function getFiles($sort = 'asc')
                     ob_start();
                     $fileEscaped = escapeshellcmd($file);
                     $fileEscaped = str_replace(' ', '\ ', $fileEscaped);
+                    $fileEscaped = str_replace('!', '\!', $fileEscaped);
+                    $fileEscaped = str_replace('\'', '\\\'', $fileEscaped);
                     passthru($conf['mediainfo'] . ' ' .  $fileEscaped);
                     $fileInfo = fopen($file .  '.info', 'w');
                     fwrite($fileInfo, ob_get_contents());
