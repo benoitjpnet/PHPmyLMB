@@ -94,7 +94,7 @@ function getFiles($sort = 'asc')
             );
         }
     }
-    
+
     return $filesArray;
 }
 
@@ -105,48 +105,52 @@ function getFiles($sort = 'asc')
 function explorerHTML()
 {
     /* Sort can be only mtime or asc. */
+    //TODO: Re-enable sort!!
     if (isset($_GET['sort']) && ($_GET['sort'] == 'mtime')) {
         $sort = 'mtime';
     } else {
        $sort = 'asc';
     }
     $filesArray = getFiles($sort);
+    $filesCount = count($filesArray);
+    $i=1;
     $explorer = '';
-    $lastDirname = '';
-    foreach ($filesArray as $id => $file) {
-        echo ("if {$file['dirname']} != $lastDirname");
-        if ($file['dirname'] != $lastDirname) {
+    /* Construct "vignettes". */
+    foreach ($filesArray as $file) {
+        /* Open the "vignette".*/
+        if ($i <= 2 || $file['dirname'] != $filesArray[$i-1]['dirname']) {
             $dirnameurlencoded = rawurlencode($file['dirname']);
             $explorer .= <<<EOT
 
     <div class="vignette">
         <div class="title">{$file['dirname']}/</div>
-            <ul>
+        <ul>
 
 EOT;
         }
+        /* Set files in the vignette. */
         $filenameurlencoded = rawurlencode($file['name']);
         $explorer .= <<<EOT
 
-                <li>
-                    <a href="$dirnameurlencoded/$filenameurlencoded"><img title="Right click → Save as" alt="" src="save.png"></a>
-                    <a href="?file=$dirnameurlencoded/$filenameurlencoded&amp;sort=$sort">{$file['name']}</a>
-                </li>
+            <li>
+                <a href="$dirnameurlencoded/$filenameurlencoded"><img title="Right click → Save as" alt="" src="save.png"></a>
+                <a href="?id=$i&file=$dirnameurlencoded/$filenameurlencoded&amp;sort=$sort">{$file['name']}</a>
+            </li>
 
 EOT;
-        
-        if ($file['dirname'] != $lastDirname) {
+        /* Close the vignette if no more files in it. */
+        if ($i == $filesCount || $file['dirname'] != $filesArray[$i+1]['dirname']) {
             $explorer .= <<<EOT
 
-            </ul>
-        </div>
+        </ul>
+    </div>
 
 EOT;
-        $lastDirname = $file['dirname'];
+
         }
-    } 
-    $explorer .= '</div>';
-    
+    $i++;
+    }
+
     return $explorer;
 }
 
@@ -243,21 +247,32 @@ EOT;
  * File viewing part. When user has clicked on a file.
  * Generates the embedded media.
  */
-if (isset($_GET['file'])) {
-    $path = urldecode($_GET['file']);
-    /* Verify if the file exists and construct the embedded media. */
-    if (file_exists('./' . $path)) {
-        $mtime = filemtime($path);
+if (isset($_GET['id'])) {
+
+    /* Verify if the id/file exists and construct the embedded media. */
+    $id = $_GET['id'];
+    $filesArray = getFiles();
+    if (array_key_exists($id, $filesArray)) {
+        $mtime = $filesArray[$id]['mtime'];
         $mtimeATOM = date(DATE_ATOM, $mtime);
         $mtimeHuman = date(DATE_RFC822, $mtime);
-        $mediatitle = $path;
-        $pathinfo = pathinfo($path);
+        $mediatitle = $filesArray[$id]['name'];
+        $pathinfo = pathinfo($filesArray[$id]['path']);
         $pathurlencoded = rawurlencode($pathinfo['dirname']) . '/' . rawurlencode($pathinfo['basename']);
         $mediacode = <<<EOT
 
             <div class="fileinfo">
-                File: <time datetime="$mtimeATOM">$path</time><br />
-                Added: $mtimeHuman
+                File: <time datetime="$mtimeATOM">{$filesArray[$id]['path']}</time><br />
+                Added: $mtimeHuman <br />
+                //TODO: Don't add detailed info if no mediainfo.
+                <a href="javascript:toggle('info');">
+                    Detailed informations (click to toggle).
+                </a>
+                <div id="info" class="hidden">
+                    <pre>
+                        {$filesArray[$id]['extendedDetails']}
+                    </pre>
+                </div>
             </div>
 
 EOT;
@@ -266,7 +281,7 @@ EOT;
         /* Video */
         case 'webm':
             /* Load VTT subtitles if any.*/
-            if (file_exists('./' . $path . '.vtt')) {
+            if (file_exists('./' . $filesArray[$id]['path'] . '.vtt')) {
                 $mediacode .= "\t\t\t" . '<video id="media" src="' . $pathurlencoded  .'" controls="" autoplay=""><track src="' . $pathurlencoded . '.vtt" kind="subtitles" default>Your browser doesn\'t support this format. Try Firefox.</video><br>[<a title="This stream has soft subtitles displayed in HTML5. Click to download the VTT file" href="' . $pathurlencoded . '.vtt">Download subtitles?</a>]';
             } else {
                 $mediacode .= "\t\t\t" . '<video id="media" src="' . $pathurlencoded  .'" controls="" autoplay="">Your browser doesn\'t support this format. Try Firefox.</video>';
@@ -362,9 +377,17 @@ EOT;
         print <<<EOT
 
 </div>
-    <div id="footer">
-        {$conf['footer']}
-    </div>
+<div id="footer">
+    {$conf['footer']}
+</div>
+<script type="text/javascript">
+    function toggle(divID) {
+        var item = document.getElementById(divID);
+        if (item) {
+            item.className=(item.className=='hidden')?'unhidden':'hidden';
+        }
+    }
+</script>
 </body>
 </html>
 EOT;

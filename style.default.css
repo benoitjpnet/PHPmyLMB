@@ -94,3 +94,11 @@ embed {
     height: 3em;
     margin-top: -3em;
 }
+
+.hidden {
+    display: none;
+}
+
+.unhidden {
+    display: block;
+}
