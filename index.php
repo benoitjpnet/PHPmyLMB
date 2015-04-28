@@ -227,16 +227,17 @@ if (isset($_GET['feed'])) {
 
 EOT;
     $filesArray = getFiles();
-    foreach ($filesArray as $dirname => $files) {
-        foreach ($files as $file) {
-            $nameurlencoded = rawurlencode($file['name']);
-            $dirnameurlencoded = rawurlencode($dirname);
-            $updated = date(DATE_ATOM, $file['mtime']);
-            $name = htmlentities($file['name'], ENT_COMPAT | ENT_XML1, 'UTF-8');
-            $entries[$file['mtime']] = <<<EOT
+    foreach ($filesArray as $file) {
+        $nameurlencoded = rawurlencode($file['name']);
+        $dirnameurlencoded = rawurlencode($file['dirname']);
+        $namespecial = htmlspecialchars($file['name']);
+        $dirnamespecial = htmlspecialchars($file['dirname']);
+        $updated = date(DATE_ATOM, $file['mtime']);
+        $name = htmlentities($file['name'], ENT_COMPAT | ENT_XML1, 'UTF-8');
+        $entries[$file['mtime']] = <<<EOT
 
     <entry>
-        <title type="html">$dirname/$name</title>
+        <title type="html">{$dirnamespecial}/{$namespecial}</title>
         <link href="{$conf['uri']}/?file=$dirnameurlencoded/$nameurlencoded"/>
         <id>{$conf['uri']}/?file=$dirnameurlencoded/$nameurlencoded</id>
         <updated>$updated</updated>
@@ -245,7 +246,6 @@ EOT;
     </entry>
 
 EOT;
-        }
     }
     /* Finally return the last entries ($conf['feed_items']) for the feed.*/
     krsort($entries);
