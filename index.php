@@ -7,10 +7,21 @@
  * LICENCE is WTFPL.
  */
 
+/* Load the default config file or the local one. */
 if(file_exists('config.local.php')) {
     require 'config.local.php';
 } else {
     require 'config.default.php';
+}
+
+/* Check if mediainfo binary is accessible. */
+if ($conf['extendedDetails'] && !file_exists($conf['mediainfo'])) {
+    $conf['extendedDetails'] = false;
+    trigger_error(
+        'Extended details is disabled. No access to mediainfo binary!
+        Install mediainfo on your server or disable extendedDetails in configuration.',
+        E_USER_WARNING
+    );
 }
 
 /**
@@ -18,7 +29,7 @@ if(file_exists('config.local.php')) {
  *
  * @param string $sort Mode used for sorting files.
  *  Default: asc
- *  Can be: asc or mtime
+ *  Can be: asc, desc or mtime
  *
  * @return array $filesArray
  */
@@ -26,10 +37,10 @@ function getFiles($sort = 'asc')
 {
     global $conf;
     /* If results are cached and cache not expired, use it. */
-    if ($conf['cache_enabled'] && is_readable($conf['cache_path'].$sort)) {
-        if ((time() - filemtime($conf['cache_path'].$sort)) <= $conf['cache_expire']) {
-            $fileCache = fopen($conf['cache_path'].$sort, 'r');
-            $contents = fread($fileCache, filesize($conf['cache_path'].$sort));
+    if ($conf['cache_enabled'] && is_readable($conf['cache_path'] . $sort)) {
+        if ((time() - filemtime($conf['cache_path'] . $sort)) <= $conf['cache_expire']) {
+            $fileCache = fopen($conf['cache_path'] . $sort, 'r');
+            $contents = fread($fileCache, filesize($conf['cache_path'] . $sort));
             fclose($fileCache);
 
             return unserialize($contents);
@@ -43,28 +54,32 @@ function getFiles($sort = 'asc')
         foreach ($files as $file) {
             $name = explode("/", $file);
             $mtime = filemtime($file);
-            /*
-             * Obtain extended details with mediainfo binary and save it to
-             * .info file if it doesn't exists.
-             */
-             //TODO: Check if mediainfo is enabled and availible.
-            if (!file_exists($file . '.info')) {
-                ob_start();
-                $fileEscaped = escapeshellcmd($file);
-                $fileEscaped = str_replace(' ', '\ ', $fileEscaped);
-                passthru($conf['mediainfo'] . ' ' .  $fileEscaped);
-                $fileInfo = fopen($file .  '.info', 'w');
-                fwrite($fileInfo, ob_get_contents());
+            if ($conf['extendedDetails'] === true) {
+                /*
+                * Obtain extended details with mediainfo binary and save it to
+                * .info file if it doesn't exists.
+                */
+                if (!file_exists($file . '.info')) {
+                    ob_start();
+                    $fileEscaped = escapeshellcmd($file);
+                    $fileEscaped = str_replace(' ', '\ ', $fileEscaped);
+                    passthru($conf['mediainfo'] . ' ' .  $fileEscaped);
+                    $fileInfo = fopen($file .  '.info', 'w');
+                    fwrite($fileInfo, ob_get_contents());
+                    fclose($fileInfo);
+                    ob_end_clean();
+                }
+                /* Read .info file. Cached forever. */
+                $fileInfo = fopen($file . '.info', 'r');
+                $extendedDetails = fread($fileInfo, filesize($file . '.info'));
                 fclose($fileInfo);
-                ob_end_clean();
+            } else {
+                $extendedDetails = false;
             }
-            /* Read .info file. */
-            $fileInfo = fopen($file . '.info', 'r');
-            $extendedDetails = fread($fileInfo, filesize($file . '.info'));
-            fclose($fileInfo);
             /* Store obtained details about the media. */
             $id++;
             $filesArray[$id] = array(
+                'id' => $id,
                 'path' => $file,
                 'dirname' => $name[1],
                 'name' => $name[2],
@@ -72,18 +87,61 @@ function getFiles($sort = 'asc')
                 'extendedDetails' => $extendedDetails,
             );
         }
-        //TODO: Re-enable sort options.
-//         if ($sort == 'mtime') {
-//             krsort($filesValues);
-//             $filesArray[$dir] = $filesValues;
-//         } else { // Default to ascending.
-//             $filesArray[$dir] = $filesValues;
-//         }
-//         unset($filesValues);
+    }
+    /* Sorting array. Default, sorted ASC by glob(). */
+    if ($sort == 'mtime') {
+        foreach ($filesArray as $file) {
+            /* We can have conflict in mtime key, so be sure to not have
+             * conflict by adding seconds... :(
+             */
+            if (isset($tempArray) && (array_key_exists($file['dirname'], $tempArray))) {
+                while (array_key_exists($file['mtime'], $tempArray[$file['dirname']])) {
+                    $file['mtime']++;
+                }
+            }
+            $tempArray[$file['dirname']][$file['mtime']] = $file;
+        }
+        unset($filesArray);
+        foreach ($tempArray as $dirname => $files) {
+            krsort($tempArray[$dirname]);
+        }
+        foreach ($tempArray as $files) {
+            foreach ($files as $file) {
+                $filesArray[$file['id']] = $file;
+            }
+        }
+    }
+    if ($sort == 'desc') {
+        foreach ($filesArray as $file) {
+            $tempArray[$file['dirname']][$file['name']] = $file;
+        }
+        unset($filesArray);
+        foreach ($tempArray as $dirname => $files) {
+            krsort($tempArray[$dirname]);
+        }
+        foreach ($tempArray as $files) {
+            foreach ($files as $file) {
+                $filesArray[$file['id']] = $file;
+            }
+        }
+    }
+    if ($sort == 'asc') {
+        foreach ($filesArray as $file) {
+            $tempArray[$file['dirname']][$file['name']] = $file;
+        }
+        unset($filesArray);
+        foreach ($tempArray as $dirname => $files) {
+            ksort($tempArray[$dirname]);
+        }
+        foreach ($tempArray as $files) {
+            foreach ($files as $file) {
+                $filesArray[$file['id']] = $file;
+            }
+        }
     }
     /* Store results in the cache & return it. */
     if ($conf['cache_enabled']) {
-        $fileCache = fopen($conf['cache_path'].$sort, 'w');
+        $fileCache = fopen($conf['cache_path'] . $sort, 'w');
         if ($fileCache !== false) {
             fwrite($fileCache, serialize($filesArray));
             fclose($fileCache);
@@ -105,9 +163,10 @@ function getFiles($sort = 'asc')
 function explorerHTML()
 {
     /* Sort can be only mtime or asc. */
-    //TODO: Re-enable sort!!
     if (isset($_GET['sort']) && ($_GET['sort'] == 'mtime')) {
         $sort = 'mtime';
+    } elseif (isset($_GET['sort']) && ($_GET['sort'] == 'desc')) {
+        $sort = 'desc';
     } else {
        $sort = 'asc';
     }
@@ -134,7 +193,7 @@ EOT;
 
             <li>
                 <a href="$dirnameurlencoded/$filenameurlencoded"><img title="Right click → Save as" alt="" src="save.png"></a>
-                <a href="?id=$i&file=$dirnameurlencoded/$filenameurlencoded&amp;sort=$sort">{$file['name']}</a>
+                <a href="?id={$file['id']}&amp;file=$dirnameurlencoded/$filenameurlencoded&amp;sort=$sort">{$file['name']}</a>
             </li>
 
 EOT;
@@ -264,7 +323,9 @@ if (isset($_GET['id'])) {
             <div class="fileinfo">
                 File: <time datetime="$mtimeATOM">{$filesArray[$id]['path']}</time><br />
                 Added: $mtimeHuman <br />
-                //TODO: Don't add detailed info if no mediainfo.
+EOT;
+        if ($conf['extendedDetails'] === true) {
+            $mediacode .= <<<EOT
                 <a href="javascript:toggle('info');">
                     Detailed informations (click to toggle).
                 </a>
@@ -276,6 +337,7 @@ if (isset($_GET['id'])) {
             </div>
 
 EOT;
+        }
         /* Handle file types. */
         switch($pathinfo['extension']) {
         /* Video */
@@ -354,6 +416,10 @@ EOT;
             $options .= '<option value="?sort=asc" selected="">Ascending</option>' ."\n";
         } else {
             $options .= '<option value="?sort=asc">Ascending</option>' ."\n";
+        } if (isset($_GET['sort']) && $_GET['sort'] == 'desc') {
+            $options .= "\t\t\t" . '<option value="?sort=desc" selected="">Descending</option>';
+        } else {
+            $options .= "\t\t\t" . '<option value="?sort=desc">Descending</option>';
         } if (isset($_GET['sort']) && $_GET['sort'] == 'mtime') {
             $options .= "\t\t\t" . '<option value="?sort=mtime" selected="">Last uploaded files</option>';
         } else {

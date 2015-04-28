@@ -18,8 +18,10 @@ $conf = array(
      * Path to mediainfo binary. Used to obtains details about media.
      * If PHPmyLMB cannot access to mediainfo binary, extended details is
      * not activated.
+     * Set extendedDetails to false if you don't want this feature.
      */
      'mediainfo' => '/usr/bin/mediainfo',
+     'extendedDetails' => true,
     /*
      * 2 files are used for cache, cache_asc and cache_mtime.
      * Need to be writable!
