@@ -179,7 +179,7 @@ function explorerHTML()
     /* Construct "vignettes". */
     foreach ($filesArray as $file) {
         /* Open the "vignette".*/
-        if ($i <= 2 || $file['dirname'] != $filesArray[$i-1]['dirname']) {
+        if ($i <= 1 || $file['dirname'] != $filesArray[$i-1]['dirname']) {
             $dirnameurlencoded = rawurlencode($file['dirname']);
             $explorer .= <<<EOT
 
