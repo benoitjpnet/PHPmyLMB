@@ -270,23 +270,21 @@ if (isset($_GET['playlist'])) {
 EOT;
 
     $filesArray = getFiles();
-    foreach ($filesArray as $dirname => $files) {
-        foreach ($files as $file) {
-            if (preg_match('/(.webm|.opus|.ogg)/i', $file['name'])) {
-                $nameurlencoded = rawurlencode($file['name']);
-                $dirnameurlencoded = rawurlencode($dirname);
-                $filename = htmlspecialchars($file['name']);
-                $dirname = htmlspecialchars($dirname);
-                $entries[$file['mtime']] = <<<EOT
+    foreach ($filesArray as $file) {
+        if (preg_match('/(.webm|.opus|.ogg)/i', $file['name'])) {
+            $nameurlencoded = rawurlencode($file['name']);
+            $dirnameurlencoded = rawurlencode($file['dirname']);
+            $filename = htmlspecialchars($file['name']);
+            $dirname = htmlspecialchars($file['dirname']);
+            $entries[$file['mtime']] = <<<EOT
 
-            <track>
-                <title>$dirname/$filename</title>
-                <location>{$conf['uri']}/$dirnameurlencoded/$nameurlencoded</location>
-            </track>
+        <track>
+            <title>$dirname/$filename</title>
+            <location>{$conf['uri']}/$dirnameurlencoded/$nameurlencoded</location>
+        </track>
 
 EOT;
             }
-        }
     }
     if ($sort == 'mtime') {
         krsort($entries);
