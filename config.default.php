@@ -32,7 +32,7 @@ $conf = array(
      * Theme related stuff.
      */
     'author' => 'your name',
-    'title' => 'PHPmyLMP – Lightweight Media Browser',
+    'title' => 'PHPmyLMB – Lightweight Media Browser',
     'desc' => "yourName's Media",
     'feed_items' => 30,
     'header' => '<a href="https://github.com/benpro/PHPmyLMB"><img style="position: absolute; top: 0; right: 0; border: 0;" src="forkme.png" alt="Fork me on GitHub"></a>',
