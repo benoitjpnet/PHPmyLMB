@@ -15,6 +15,14 @@ $conf = array(
      */
     'allowed_extensions' => '*.{webm,opus,ogg,webp,png,gif,jpg,jpeg,svg,pdf}',
     /*
+     * Path to mediainfo binary. Used to obtains details about media.
+     * If PHPmyLMB cannot access to mediainfo binary, extended details is
+     * not activated.
+     * Set extendedDetails to false if you don't want this feature.
+     */
+     'mediainfo' => '/usr/bin/mediainfo',
+     'extendedDetails' => true,
+    /*
      * 2 files are used for cache, cache_asc and cache_mtime.
      * Need to be writable!
      * If you want to clear the cache, just delete cache_* files.
@@ -26,7 +34,7 @@ $conf = array(
      * Theme related stuff.
      */
     'author' => 'your name',
-    'title' => 'PHPmyLMP – Lightweight Media Browser',
+    'title' => 'PHPmyLMB – Lightweight Media Browser',
     'desc' => "yourName's Media",
     'feed_items' => 30,
     'header' => '<a href="https://github.com/benpro/PHPmyLMB"><img style="position: absolute; top: 0; right: 0; border: 0;" src="forkme.png" alt="Fork me on GitHub"></a>',

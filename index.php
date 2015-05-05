@@ -7,10 +7,21 @@
  * LICENCE is WTFPL.
  */
 
+/* Load the default config file or the local one. */
 if(file_exists('config.local.php')) {
     require 'config.local.php';
 } else {
     require 'config.default.php';
+}
+
+/* Check if mediainfo binary is accessible. */
+if ($conf['extendedDetails'] && !file_exists($conf['mediainfo'])) {
+    $conf['extendedDetails'] = false;
+    trigger_error(
+        'Extended details is disabled. No access to mediainfo binary!
+        Install mediainfo on your server or disable extendedDetails in configuration.',
+        E_USER_WARNING
+    );
 }
 
 /**
@@ -18,7 +29,7 @@ if(file_exists('config.local.php')) {
  *
  * @param string $sort Mode used for sorting files.
  *  Default: asc
- *  Can be: asc or mtime
+ *  Can be: asc, desc or mtime
  *
  * @return array $filesArray
  */
@@ -26,38 +37,170 @@ function getFiles($sort = 'asc')
 {
     global $conf;
     /* If results are cached and cache not expired, use it. */
-    if ($conf['cache_enabled'] && is_readable($conf['cache_path'].$sort)) {
-        if ((time() - filemtime($conf['cache_path'].$sort)) <= $conf['cache_expire']) {
-            $fileCache = fopen($conf['cache_path'].$sort, 'r');
-            $contents = fread($fileCache, filesize($conf['cache_path'].$sort));
+    if ($conf['cache_enabled'] && is_readable($conf['cache_path'] . $sort)) {
+        if ((time() - filemtime($conf['cache_path'] . $sort)) <= $conf['cache_expire']) {
+            $fileCache = fopen($conf['cache_path'] . $sort, 'r');
+            $contents = fread($fileCache, filesize($conf['cache_path'] . $sort));
             fclose($fileCache);
 
             return unserialize($contents);
         }
     }
+    $id = 0;
+    $filesArray = array();
     /* Search for files (which are allowed_extensions) in all directories. */
     $directories = glob('*', GLOB_ONLYDIR);
+    if (count($directories) == 0) {
+        trigger_error(
+            'No folder detected, please add at least one folder!',
+            E_USER_WARNING
+        );
+    }
     foreach ($directories as $dir) {
         $files = glob('./' . $dir . '/' . $conf['allowed_extensions'], GLOB_BRACE);
+        if (count($files) == 0) {
+            trigger_error(
+                "Folder $dir has no compatible media, please add at least one!",
+                E_USER_WARNING
+            );
+        }
         foreach ($files as $file) {
             $name = explode("/", $file);
             $mtime = filemtime($file);
-            $filesValues[$mtime] = array(
+            if ($conf['extendedDetails'] === true) {
+                /*
+                * Obtain extended details with mediainfo binary and save it to
+                * .info file if it doesn't exists.
+                */
+                if (!file_exists($file . '.info')) {
+                    ob_start();
+                    passthru($conf['mediainfo'] . ' "' . $file . '"', $return);
+                    if ($return !=0 ) {
+                        print 'Error with mediainfo, command line was: '
+                            . $conf['mediainfo'] . ' "' . $file . '"';
+                    }
+                    $fileInfo = fopen($file .  '.info', 'w');
+                    fwrite($fileInfo, ob_get_contents());
+                    fclose($fileInfo);
+                    ob_end_clean();
+                }
+                /* Read .info file. Cached forever. */
+                $fileInfo = fopen($file . '.info', 'r');
+                $extendedDetails = fread($fileInfo, filesize($file . '.info'));
+                fclose($fileInfo);
+            } else {
+                $extendedDetails = false;
+            }
+            /* Store obtained details about the media. */
+            $id++;
+            $filesArray[$id] = array(
+                'id' => $id,
+                'path' => $file,
+                'dirname' => $name[1],
                 'name' => $name[2],
                 'mtime' => $mtime,
+                'extendedDetails' => $extendedDetails,
             );
         }
-        if ($sort == 'mtime') {
-            krsort($filesValues);
-            $filesArray[$dir] = $filesValues;
-        } else { // Default to ascending.
-            $filesArray[$dir] = $filesValues;
+    }
+    /* If no media, generate a false content. */
+    if (count($filesArray) == 0) {
+        $filesArray[1] = array(
+            'id' => 1,
+            'path' => 'error',
+            'dirname' => 'error',
+            'name' => 'No media detected!',
+            'mtime' => time(),
+            'extendedDetail' => ''
+        );
+    }
+    /* 
+     * Sorting array.
+     * TODO: Can be optimized/factored...
+     */
+    if ($sort == 'mtime') {
+        foreach ($filesArray as $file) {
+            /* We can have conflict in mtime key, so be sure to not have
+             * conflict by adding seconds... :(
+             */
+            if (isset($tempArray) && (array_key_exists($file['dirname'], $tempArray))) {
+                while (array_key_exists($file['mtime'], $tempArray[$file['dirname']])) {
+                    $file['mtime']++;
+                }
+            }
+            $tempArray[$file['dirname']][$file['mtime']] = $file;
         }
-        unset($filesValues);
+        unset($filesArray);
+        foreach ($tempArray as $dirname => $files) {
+            krsort($tempArray[$dirname]);
+        }
+        foreach ($tempArray as $files) {
+            $previousID = false;
+            foreach ($files as $file) {
+                $filesArray[$file['id']] = $file;
+                /* We add a next an previous ID for navigation. */
+                $nextID = next($files)['id'];
+                if (is_null($nextID)) {
+                    $filesArray[$file['id']]['nextid'] = false;
+                } else {
+                    $filesArray[$file['id']]['nextid'] = $nextID;
+                }
+                $filesArray[$file['id']]['previousid'] = $previousID;
+                $previousID = $file['id'];
+            }
+        }
+    }
+    if ($sort == 'desc') {
+        foreach ($filesArray as $file) {
+            $tempArray[$file['dirname']][$file['name']] = $file;
+        }
+        unset($filesArray);
+        foreach ($tempArray as $dirname => $files) {
+            krsort($tempArray[$dirname]);
+        }
+        foreach ($tempArray as $files) {
+            $previousID = false;
+            foreach ($files as $file) {
+                $filesArray[$file['id']] = $file;
+                /* We add a next an previous ID for navigation. */
+                $nextID = next($files)['id'];
+                if (is_null($nextID)) {
+                    $filesArray[$file['id']]['nextid'] = false;
+                } else {
+                    $filesArray[$file['id']]['nextid'] = $nextID;
+                }
+                $filesArray[$file['id']]['previousid'] = $previousID;
+                $previousID = $file['id'];
+            }
+        }
+    }
+    if ($sort == 'asc') {
+        foreach ($filesArray as $file) {
+            $tempArray[$file['dirname']][$file['name']] = $file;
+        }
+        unset($filesArray);
+        foreach ($tempArray as $dirname => $files) {
+            ksort($tempArray[$dirname]);
+        }
+        foreach ($tempArray as $files) {
+            $previousID = false;
+            foreach ($files as $file) {
+                $filesArray[$file['id']] = $file;
+                /* We add a next an previous ID for navigation. */
+                $nextID = next($files)['id'];
+                if (is_null($nextID)) {
+                    $filesArray[$file['id']]['nextid'] = false;
+                } else {
+                    $filesArray[$file['id']]['nextid'] = $nextID;
+                }
+                $filesArray[$file['id']]['previousid'] = $previousID;
+                $previousID = $file['id'];
+            }
+        }
     }
     /* Store results in the cache & return it. */
     if ($conf['cache_enabled']) {
-        $fileCache = fopen($conf['cache_path'].$sort, 'w');
+        $fileCache = fopen($conf['cache_path'] . $sort, 'w');
         if ($fileCache !== false) {
             fwrite($fileCache, serialize($filesArray));
             fclose($fileCache);
@@ -81,37 +224,49 @@ function explorerHTML()
     /* Sort can be only mtime or asc. */
     if (isset($_GET['sort']) && ($_GET['sort'] == 'mtime')) {
         $sort = 'mtime';
+    } elseif (isset($_GET['sort']) && ($_GET['sort'] == 'desc')) {
+        $sort = 'desc';
     } else {
        $sort = 'asc';
     }
     $filesArray = getFiles($sort);
+    $filesCount = count($filesArray);
+    $i = 1;
     $explorer = '';
-    foreach ($filesArray as $dirname => $files) {
-        $dirnameurlencoded = rawurlencode($dirname);
-        $explorer .= <<<EOT
-
-    <div class="vignette">
-        <div class="title">$dirname/</div>
-            <ul>
-
-EOT;
-        foreach ($files as $file) {
-            $filenameurlencoded = rawurlencode($file['name']);
+    /* Construct "vignettes". */
+    foreach ($filesArray as $file) {
+        /* Open the "vignette".*/
+        if ($i <= 1 || $file['dirname'] != $filesArray[$i-1]['dirname']) {
+            $dirnameurlencoded = rawurlencode($file['dirname']);
             $explorer .= <<<EOT
 
-                <li>
-                    <a href="$dirnameurlencoded/$filenameurlencoded"><img title="Right click → Save as" alt="" src="save.png"></a>
-                    <a href="?file=$dirnameurlencoded/$filenameurlencoded&amp;sort=$sort">{$file['name']}</a>
-                </li>
+    <div class="vignette">
+        <div class="title">{$file['dirname']}/</div>
+        <ul>
 
 EOT;
         }
+        /* Set files in the vignette. */
+        $filenameurlencoded = rawurlencode($file['name']);
         $explorer .= <<<EOT
+
+            <li>
+                <a href="$dirnameurlencoded/$filenameurlencoded"><img title="Right click → Save as" alt="" src="save.png"></a>
+                <a href="?id={$file['id']}&amp;file=$dirnameurlencoded/$filenameurlencoded&amp;sort=$sort">{$file['name']}</a>
+            </li>
+
+EOT;
+        /* Close the vignette if no more files in it. */
+        if ($i == $filesCount || $file['dirname'] != $filesArray[$i+1]['dirname']) {
+            $explorer .= <<<EOT
 
         </ul>
     </div>
 
 EOT;
+
+        }
+        $i++;
     }
 
     return $explorer;
@@ -131,16 +286,17 @@ if (isset($_GET['feed'])) {
 
 EOT;
     $filesArray = getFiles();
-    foreach ($filesArray as $dirname => $files) {
-        foreach ($files as $file) {
-            $nameurlencoded = rawurlencode($file['name']);
-            $dirnameurlencoded = rawurlencode($dirname);
-            $updated = date(DATE_ATOM, $file['mtime']);
-            $name = htmlentities($file['name'], ENT_COMPAT | ENT_XML1, 'UTF-8');
-            $entries[$file['mtime']] = <<<EOT
+    foreach ($filesArray as $file) {
+        $nameurlencoded = rawurlencode($file['name']);
+        $dirnameurlencoded = rawurlencode($file['dirname']);
+        $namespecial = htmlspecialchars($file['name']);
+        $dirnamespecial = htmlspecialchars($file['dirname']);
+        $updated = date(DATE_ATOM, $file['mtime']);
+        $name = htmlentities($file['name'], ENT_COMPAT | ENT_XML1, 'UTF-8');
+        $entries[$file['mtime']] = <<<EOT
 
     <entry>
-        <title type="html">$dirname/$name</title>
+        <title type="html">{$dirnamespecial}/{$namespecial}</title>
         <link href="{$conf['uri']}/?file=$dirnameurlencoded/$nameurlencoded"/>
         <id>{$conf['uri']}/?file=$dirnameurlencoded/$nameurlencoded</id>
         <updated>$updated</updated>
@@ -149,7 +305,6 @@ EOT;
     </entry>
 
 EOT;
-        }
     }
     /* Finally return the last entries ($conf['feed_items']) for the feed.*/
     krsort($entries);
@@ -174,23 +329,21 @@ if (isset($_GET['playlist'])) {
 EOT;
 
     $filesArray = getFiles();
-    foreach ($filesArray as $dirname => $files) {
-        foreach ($files as $file) {
-            if (preg_match('/(.webm|.opus|.ogg)/i', $file['name'])) {
-                $nameurlencoded = rawurlencode($file['name']);
-                $dirnameurlencoded = rawurlencode($dirname);
-                $filename = htmlspecialchars($file['name']);
-                $dirname = htmlspecialchars($dirname);
-                $entries[$file['mtime']] = <<<EOT
+    foreach ($filesArray as $file) {
+        if (preg_match('/(.webm|.opus|.ogg)/i', $file['name'])) {
+            $nameurlencoded = rawurlencode($file['name']);
+            $dirnameurlencoded = rawurlencode($file['dirname']);
+            $filename = htmlspecialchars($file['name']);
+            $dirname = htmlspecialchars($file['dirname']);
+            $entries[$file['mtime']] = <<<EOT
 
-            <track>
-                <title>$dirname/$filename</title>
-                <location>{$conf['uri']}/$dirnameurlencoded/$nameurlencoded</location>
-            </track>
+        <track>
+            <title>$dirname/$filename</title>
+            <location>{$conf['uri']}/$dirnameurlencoded/$nameurlencoded</location>
+        </track>
 
 EOT;
             }
-        }
     }
     if ($sort == 'mtime') {
         krsort($entries);
@@ -210,30 +363,45 @@ EOT;
  * File viewing part. When user has clicked on a file.
  * Generates the embedded media.
  */
-if (isset($_GET['file'])) {
-    $path = urldecode($_GET['file']);
-    /* Verify if the file exists and construct the embedded media. */
-    if (file_exists('./' . $path)) {
-        $mtime = filemtime($path);
+if (isset($_GET['id'])) {
+
+    /* Verify if the id/file exists and construct the embedded media. */
+    $id = $_GET['id'];
+    $sort = $_GET['sort'];
+    $filesArray = getFiles($sort);
+    if (array_key_exists($id, $filesArray)) {
+        $mtime = $filesArray[$id]['mtime'];
         $mtimeATOM = date(DATE_ATOM, $mtime);
         $mtimeHuman = date(DATE_RFC822, $mtime);
-        $mediatitle = $path;
-        $pathinfo = pathinfo($path);
+        $mediatitle = $filesArray[$id]['name'];
+        $pathinfo = pathinfo($filesArray[$id]['path']);
         $pathurlencoded = rawurlencode($pathinfo['dirname']) . '/' . rawurlencode($pathinfo['basename']);
         $mediacode = <<<EOT
 
             <div class="fileinfo">
-                File: <time datetime="$mtimeATOM">$path</time><br />
-                Added: $mtimeHuman
+                File: <time datetime="$mtimeATOM">{$filesArray[$id]['path']}</time><br />
+                Added: $mtimeHuman <br />
+EOT;
+        if ($conf['extendedDetails'] === true) {
+            $mediacode .= <<<EOT
+                <a href="javascript:toggle('info');">
+                    Detailed informations (click to toggle).
+                </a>
+                <div id="info" class="hidden">
+                    <pre>
+                        {$filesArray[$id]['extendedDetails']}
+                    </pre>
+                </div>
             </div>
 
 EOT;
+        }
         /* Handle file types. */
         switch($pathinfo['extension']) {
         /* Video */
         case 'webm':
             /* Load VTT subtitles if any.*/
-            if (file_exists('./' . $path . '.vtt')) {
+            if (file_exists('./' . $filesArray[$id]['path'] . '.vtt')) {
                 $mediacode .= "\t\t\t" . '<video id="media" src="' . $pathurlencoded  .'" controls="" autoplay=""><track src="' . $pathurlencoded . '.vtt" kind="subtitles" default>Your browser doesn\'t support this format. Try Firefox.</video><br>[<a title="This stream has soft subtitles displayed in HTML5. Click to download the VTT file" href="' . $pathurlencoded . '.vtt">Download subtitles?</a>]';
             } else {
                 $mediacode .= "\t\t\t" . '<video id="media" src="' . $pathurlencoded  .'" controls="" autoplay="">Your browser doesn\'t support this format. Try Firefox.</video>';
@@ -262,6 +430,14 @@ EOT;
             header("415 Unsupported Media Type");
             print "<h1>415 Unsupported Media Type</h1>";
             exit(1);
+        }
+        /* Create naviation link to go at next or previous media. */
+        $navigation = '';
+        if ($filesArray[$id]['nextid'] !== FALSE) {
+            $navigation .= '<a href="?id=' . $filesArray[$id]['nextid'] . '&amp;sort=' . $sort . '">→ Next</a><br />';
+        }
+        if ($filesArray[$id]['previousid'] !== FALSE) {
+            $navigation .= '<a href="?id=' . $filesArray[$id]['previousid'] . '&amp;sort=' . $sort . '">← Previous</a><br />';
         }
     } else {
         header("404 Not Found");
@@ -306,6 +482,10 @@ EOT;
             $options .= '<option value="?sort=asc" selected="">Ascending</option>' ."\n";
         } else {
             $options .= '<option value="?sort=asc">Ascending</option>' ."\n";
+        } if (isset($_GET['sort']) && $_GET['sort'] == 'desc') {
+            $options .= "\t\t\t" . '<option value="?sort=desc" selected="">Descending</option>';
+        } else {
+            $options .= "\t\t\t" . '<option value="?sort=desc">Descending</option>';
         } if (isset($_GET['sort']) && $_GET['sort'] == 'mtime') {
             $options .= "\t\t\t" . '<option value="?sort=mtime" selected="">Last uploaded files</option>';
         } else {
@@ -314,6 +494,7 @@ EOT;
         print <<<EOT
 
     <small>
+        $navigation
         Sort by:
         <select onChange="if (this.value) window.location.href=this.value">
             $options
@@ -329,9 +510,17 @@ EOT;
         print <<<EOT
 
 </div>
-    <div id="footer">
-        {$conf['footer']}
-    </div>
+<div id="footer">
+    {$conf['footer']}
+</div>
+<script type="text/javascript">
+    function toggle(divID) {
+        var item = document.getElementById(divID);
+        if (item) {
+            item.className=(item.className=='hidden')?'unhidden':'hidden';
+        }
+    }
+</script>
 </body>
 </html>
 EOT;
