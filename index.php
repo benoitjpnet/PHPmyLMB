@@ -46,11 +46,24 @@ function getFiles($sort = 'asc')
             return unserialize($contents);
         }
     }
-    $id=0;
+    $id = 0;
+    $filesArray = array();
     /* Search for files (which are allowed_extensions) in all directories. */
     $directories = glob('*', GLOB_ONLYDIR);
+    if (count($directories) == 0) {
+        trigger_error(
+            'No folder detected, please add at least one folder!',
+            E_USER_WARNING
+        );
+    }
     foreach ($directories as $dir) {
         $files = glob('./' . $dir . '/' . $conf['allowed_extensions'], GLOB_BRACE);
+        if (count($files) == 0) {
+            trigger_error(
+                "Folder $dir has no compatible media, please add at least one!",
+                E_USER_WARNING
+            );
+        }
         foreach ($files as $file) {
             $name = explode("/", $file);
             $mtime = filemtime($file);
@@ -89,6 +102,17 @@ function getFiles($sort = 'asc')
                 'extendedDetails' => $extendedDetails,
             );
         }
+    }
+    /* If no media, generate a false content. */
+    if (count($filesArray) == 0) {
+        $filesArray[1] = array(
+            'id' => 1,
+            'path' => 'error',
+            'dirname' => 'error',
+            'name' => 'No media detected!',
+            'mtime' => time(),
+            'extendedDetail' => ''
+        );
     }
     /* Sorting array. Default, sorted ASC by glob(). */
     if ($sort == 'mtime') {
