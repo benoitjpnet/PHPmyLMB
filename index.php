@@ -61,11 +61,11 @@ function getFiles($sort = 'asc')
                 */
                 if (!file_exists($file . '.info')) {
                     ob_start();
-                    $fileEscaped = escapeshellcmd($file);
-                    $fileEscaped = str_replace(' ', '\ ', $fileEscaped);
-                    $fileEscaped = str_replace('!', '\!', $fileEscaped);
-                    $fileEscaped = str_replace('\'', '\\\'', $fileEscaped);
-                    passthru($conf['mediainfo'] . ' ' .  $fileEscaped);
+                    passthru($conf['mediainfo'] . ' "' . $file . '"', $return);
+                    if ($return !=0 ) {
+                        print 'Error with mediainfo, command line was: '
+                            . $conf['mediainfo'] . ' "' . $file . '"';
+                    }
                     $fileInfo = fopen($file .  '.info', 'w');
                     fwrite($fileInfo, ob_get_contents());
                     fclose($fileInfo);
