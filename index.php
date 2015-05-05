@@ -114,7 +114,10 @@ function getFiles($sort = 'asc')
             'extendedDetail' => ''
         );
     }
-    /* Sorting array. Default, sorted ASC by glob(). */
+    /* 
+     * Sorting array.
+     * TODO: Can be optimized/factored...
+     */
     if ($sort == 'mtime') {
         foreach ($filesArray as $file) {
             /* We can have conflict in mtime key, so be sure to not have
@@ -132,8 +135,18 @@ function getFiles($sort = 'asc')
             krsort($tempArray[$dirname]);
         }
         foreach ($tempArray as $files) {
+            $previousID = false;
             foreach ($files as $file) {
                 $filesArray[$file['id']] = $file;
+                /* We add a next an previous ID for navigation. */
+                $nextID = next($files)['id'];
+                if (is_null($nextID)) {
+                    $filesArray[$file['id']]['nextid'] = false;
+                } else {
+                    $filesArray[$file['id']]['nextid'] = $nextID;
+                }
+                $filesArray[$file['id']]['previousid'] = $previousID;
+                $previousID = $file['id'];
             }
         }
     }
@@ -146,8 +159,18 @@ function getFiles($sort = 'asc')
             krsort($tempArray[$dirname]);
         }
         foreach ($tempArray as $files) {
+            $previousID = false;
             foreach ($files as $file) {
                 $filesArray[$file['id']] = $file;
+                /* We add a next an previous ID for navigation. */
+                $nextID = next($files)['id'];
+                if (is_null($nextID)) {
+                    $filesArray[$file['id']]['nextid'] = false;
+                } else {
+                    $filesArray[$file['id']]['nextid'] = $nextID;
+                }
+                $filesArray[$file['id']]['previousid'] = $previousID;
+                $previousID = $file['id'];
             }
         }
     }
@@ -160,8 +183,18 @@ function getFiles($sort = 'asc')
             ksort($tempArray[$dirname]);
         }
         foreach ($tempArray as $files) {
+            $previousID = false;
             foreach ($files as $file) {
                 $filesArray[$file['id']] = $file;
+                /* We add a next an previous ID for navigation. */
+                $nextID = next($files)['id'];
+                if (is_null($nextID)) {
+                    $filesArray[$file['id']]['nextid'] = false;
+                } else {
+                    $filesArray[$file['id']]['nextid'] = $nextID;
+                }
+                $filesArray[$file['id']]['previousid'] = $previousID;
+                $previousID = $file['id'];
             }
         }
     }
@@ -198,7 +231,7 @@ function explorerHTML()
     }
     $filesArray = getFiles($sort);
     $filesCount = count($filesArray);
-    $i=1;
+    $i = 1;
     $explorer = '';
     /* Construct "vignettes". */
     foreach ($filesArray as $file) {
@@ -233,7 +266,7 @@ EOT;
 EOT;
 
         }
-    $i++;
+        $i++;
     }
 
     return $explorer;
@@ -334,7 +367,8 @@ if (isset($_GET['id'])) {
 
     /* Verify if the id/file exists and construct the embedded media. */
     $id = $_GET['id'];
-    $filesArray = getFiles();
+    $sort = $_GET['sort'];
+    $filesArray = getFiles($sort);
     if (array_key_exists($id, $filesArray)) {
         $mtime = $filesArray[$id]['mtime'];
         $mtimeATOM = date(DATE_ATOM, $mtime);
@@ -397,6 +431,14 @@ EOT;
             print "<h1>415 Unsupported Media Type</h1>";
             exit(1);
         }
+        /* Create naviation link to go at next or previous media. */
+        $navigation = '';
+        if ($filesArray[$id]['nextid'] !== FALSE) {
+            $navigation .= '<a href="?id=' . $filesArray[$id]['nextid'] . '&amp;sort=' . $sort . '">→ Next</a><br />';
+        }
+        if ($filesArray[$id]['previousid'] !== FALSE) {
+            $navigation .= '<a href="?id=' . $filesArray[$id]['previousid'] . '&amp;sort=' . $sort . '">← Previous</a><br />';
+        }
     } else {
         header("404 Not Found");
         print "<h1>404 Not Found</h1>";
@@ -452,6 +494,7 @@ EOT;
         print <<<EOT
 
     <small>
+        $navigation
         Sort by:
         <select onChange="if (this.value) window.location.href=this.value">
             $options
