@@ -216,6 +216,78 @@ function getFiles($sort = 'asc')
 }
 
 /**
+ * @desc Get the right media HTML code.
+ *
+ * @return string $mediacode HTML code for the media.
+ *
+ * @param $path, path to the file.
+ * @param $mediatitle, title of the media.
+ */
+function getMediaCode($path, $mediatitle)
+{
+    global $conf;
+    $pathinfo = pathinfo($path);
+    $pathurlencoded = $conf['uri'] . '/' . rawurlencode($pathinfo['dirname']) . '/' .
+        rawurlencode($pathinfo['basename']);
+    $extension = $pathinfo['extension'];
+    /* Handle file types. */
+    switch($extension) {
+    /* Video */
+    case 'webm':
+        /* Load VTT subtitles if any.*/
+        if (file_exists('./' . $path . '.vtt')) {
+            $mediacode = <<<EOT
+                <video id="media" src="$pathurlencoded" controls="">
+                    <track src="{$pathurlencoded}.vtt" kind="subtitles" default="">
+                    Your browser doesn't support this format. Try Firefox.
+                </video><br />
+                [<a title="This stream has soft subtitles displayed in HTML5. Click to download the VTT file" href="{$pathurlencoded}.vtt">Download subtitles?</a>]
+EOT;
+        } else {
+            $mediacode = <<<EOT
+                <video id="media" src="$pathurlencoded" controls="">
+                    Your browser doesn't support this format. Try Firefox.
+                </video>
+EOT;
+        }
+        break;
+    /* Audio */
+    case 'opus':
+    case 'ogg':
+        $mediacode = <<<EOT
+            <audio id="media" src="$pathurlencoded" controls=""">
+                Your browser doesn't support this format. Try Firefox.
+            </audio>
+EOT;
+        break;
+    /* PDF */
+    case 'pdf':
+        $mediacode = "<embed src=\"$pathurlencoded#view=Fit\">";
+        break;
+    /* Picture */
+    case 'jpg':
+    case 'jpeg':
+    case 'png':
+    case 'webp':
+    case 'svg':
+    case 'gif':
+        $mediacode = <<<EOT
+            <a title="$mediatitle" href="$pathurlencoded">
+                <img id="media" alt="$mediatitle" src="$pathurlencoded"/>
+            </a>';
+EOT;
+        break;
+    /*  */
+    default:
+        header("415 Unsupported Media Type");
+        print "<h1>415 Unsupported Media Type</h1>";
+        exit(1);
+    }
+    
+    return $mediacode;
+}
+
+/**
  * @desc Contruct the explorer HTML part.
  * @return string $explorer HTML code to generate.
  */
@@ -274,15 +346,19 @@ EOT;
 
 /* Feed part. */
 if (isset($_GET['feed'])) {
-    header('Content-Type: application/atom+xml; charset=UTF-8');
-    $date = date('c');
+    header('Content-Type: application/rss+xml; charset=UTF-8');
+    $date = date('r');
     print <<<EOT
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-    <title type="text">{$conf['title']}</title>
-    <link rel="self" type="application/atom+xml" href="{$conf['uri']}/?feed" />
-    <id>tag:phpmylmb,2000:1</id>
-    <updated>$date</updated>
+<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://www.rssboard.org/media-rss" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>{$conf['title']}</title>
+        <link>{$conf['uri']}</link>
+        <lastBuildDate>$date</lastBuildDate>
+        <atom:link href="{$conf['uri']}/?feed" rel="self" type="application/rss+xml" />
+        <language>en-US</language>
+        <generator>PHPmyLMB</generator>
+        <description>{$conf['desc']}</description>
 
 EOT;
     $filesArray = getFiles();
@@ -291,18 +367,21 @@ EOT;
         $dirnameurlencoded = rawurlencode($file['dirname']);
         $namespecial = htmlspecialchars($file['name']);
         $dirnamespecial = htmlspecialchars($file['dirname']);
-        $updated = date(DATE_ATOM, $file['mtime']);
+        $updated = date('r', $file['mtime']);
         $name = htmlentities($file['name'], ENT_COMPAT | ENT_XML1, 'UTF-8');
+        $mediacode = getMediaCode($file['path'], $file['name']);
         $entries[$file['mtime']] = <<<EOT
 
-    <entry>
-        <title type="html">{$dirnamespecial}/{$namespecial}</title>
-        <link href="{$conf['uri']}/?file=$dirnameurlencoded/$nameurlencoded"/>
-        <id>{$conf['uri']}/?file=$dirnameurlencoded/$nameurlencoded</id>
-        <updated>$updated</updated>
-        <author><name>{$conf['author']}</name></author>
-        <summary type="html">$name</summary>
-    </entry>
+        <item>
+            <title>$name</title>
+            <dc:creator>{$conf['author']}</dc:creator>
+            <pubDate>$updated</pubDate>
+            <link>{$conf['uri']}/?id={$file['id']}&amp;file=$dirnameurlencoded/$nameurlencoded</link>
+            <guid isPermaLink="false">{$file['id']}</guid>
+            <description>
+            <![CDATA[{$mediacode}]]>
+            </description>
+        </item>
 
 EOT;
     }
@@ -312,7 +391,10 @@ EOT;
     foreach ($entries as $entry) {
         print $entry;
     }
-    print '</feed>';
+    print <<<EOT
+    </channel>
+</rss>
+EOT;
     exit(0);
 }
 
@@ -374,13 +456,12 @@ if (isset($_GET['id'])) {
         $mtimeATOM = date(DATE_ATOM, $mtime);
         $mtimeHuman = date(DATE_RFC822, $mtime);
         $mediatitle = $filesArray[$id]['name'];
-        $pathinfo = pathinfo($filesArray[$id]['path']);
-        $pathurlencoded = rawurlencode($pathinfo['dirname']) . '/' . rawurlencode($pathinfo['basename']);
         $mediacode = <<<EOT
 
             <div class="fileinfo">
                 File: <time datetime="$mtimeATOM">{$filesArray[$id]['path']}</time><br />
                 Added: $mtimeHuman <br />
+
 EOT;
         if ($conf['extendedDetails'] === true) {
             $mediacode .= <<<EOT
@@ -392,45 +473,11 @@ EOT;
                         {$filesArray[$id]['extendedDetails']}
                     </pre>
                 </div>
-            </div>
 
 EOT;
         }
-        /* Handle file types. */
-        switch($pathinfo['extension']) {
-        /* Video */
-        case 'webm':
-            /* Load VTT subtitles if any.*/
-            if (file_exists('./' . $filesArray[$id]['path'] . '.vtt')) {
-                $mediacode .= "\t\t\t" . '<video id="media" src="' . $pathurlencoded  .'" controls="" autoplay=""><track src="' . $pathurlencoded . '.vtt" kind="subtitles" default>Your browser doesn\'t support this format. Try Firefox.</video><br>[<a title="This stream has soft subtitles displayed in HTML5. Click to download the VTT file" href="' . $pathurlencoded . '.vtt">Download subtitles?</a>]';
-            } else {
-                $mediacode .= "\t\t\t" . '<video id="media" src="' . $pathurlencoded  .'" controls="" autoplay="">Your browser doesn\'t support this format. Try Firefox.</video>';
-            }
-            break;
-        /* Audio */
-        case 'opus':
-        case 'ogg':
-            $mediacode .= "\t\t\t" . '<audio id="media" src="' . $pathurlencoded  .'" controls="" autoplay="">Your browser doesn\'t support this format. Try Firefox.</audio>';
-            break;
-        /* PDF */
-        case 'pdf':
-            $mediacode .= "\t\t\t" . '<embed src="' . $pathurlencoded  .'#view=Fit">';
-            break;
-        /* Picture */
-        case 'jpg':
-        case 'jpeg':
-        case 'png':
-        case 'webp':
-        case 'svg':
-        case 'gif':
-            $mediacode .= "\t\t\t" . '<a title="' . $mediatitle . '" href="' . $pathurlencoded . '"><img id="media" alt="' . $mediatitle . '" src="' . $pathurlencoded . '"/></a>';
-            break;
-        /*  */
-        default:
-            header("415 Unsupported Media Type");
-            print "<h1>415 Unsupported Media Type</h1>";
-            exit(1);
-        }
+        $mediacode .= '</div>';
+        $mediacode .= getMediaCode($filesArray[$id]['path'], $mediatitle);
         /* Create naviation link to go at next or previous media. */
         $navigation = '';
         if ($filesArray[$id]['nextid'] !== FALSE) {
@@ -450,6 +497,7 @@ EOT;
 $stylefile = (file_exists('style.local.css')) ? 'style.local.css' : 'style.default.css';
 $mediacode = (isset($mediacode)) ? $mediacode : '';
 $mediatitle = (isset($mediatitle)) ? $mediatitle : 'Home';
+$navigation = (isset($naviation)) ? $navigation : '';
 print <<<EOT
 <!DOCTYPE html>
 <head>
