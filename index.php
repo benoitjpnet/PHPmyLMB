@@ -274,7 +274,7 @@ EOT;
         $mediacode = <<<EOT
             <a title="$mediatitle" href="$pathurlencoded">
                 <img id="media" alt="$mediatitle" src="$pathurlencoded"/>
-            </a>';
+            </a>
 EOT;
         break;
     /*  */
