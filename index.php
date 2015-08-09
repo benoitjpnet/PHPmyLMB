@@ -497,7 +497,7 @@ EOT;
 $stylefile = (file_exists('style.local.css')) ? 'style.local.css' : 'style.default.css';
 $mediacode = (isset($mediacode)) ? $mediacode : '';
 $mediatitle = (isset($mediatitle)) ? $mediatitle : 'Home';
-$navigation = (isset($naviation)) ? $navigation : '';
+$navigation = (isset($navigation)) ? $navigation : '';
 print <<<EOT
 <!DOCTYPE html>
 <head>
