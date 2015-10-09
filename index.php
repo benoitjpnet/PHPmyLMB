@@ -95,7 +95,7 @@ function getFiles($sort = 'asc')
             $id++;
             $filesArray[$id] = array(
                 'id' => $id,
-                'path' => $file,
+                'path' => trim($file, "./"),
                 'dirname' => $name[1],
                 'name' => $name[2],
                 'mtime' => $mtime,
