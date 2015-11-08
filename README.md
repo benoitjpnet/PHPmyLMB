@@ -18,7 +18,7 @@ Installation
 ============
 
 1. Clone the repo somewhere on a server with PHP capabilities.
-2. Put directories with contents, configure/customize config.inc.php.
+2. Put directories with contents, configure/customize config.local.php.
 3. ???
 4. Enjoy!
 
